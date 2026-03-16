@@ -1,10 +1,60 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any, Callable, Final, ParamSpec, TypeVar
+from collections.abc import Awaitable
 
 from pydantic import GetCoreSchemaHandler
 from pydantic.fields import FieldInfo
 from pydantic_core import CoreSchema, PydanticCustomError, core_schema
+
+__all__: Final = (
+    "Requires",
+    "Since",
+    "Unsupported",
+    "requires",
+    "since",
+    "unsupported",
+)
+
+_C = TypeVar("_C")
+_P = ParamSpec("_P")
+_T = TypeVar("_T")
+
+
+@dataclass(frozen=True, slots=True)
+class Requires:
+    """Metadata marker indicating the minimum server version required by an endpoint."""
+
+    version: str
+    """The minimum server version string required to call the decorated endpoint."""
+
+
+def requires(
+    version: str,
+    /,
+) -> Callable[[Callable[_P, Awaitable[_T]]], Callable[_P, Awaitable[_T]]]:
+    """Decorate an async method to enforce a minimum server version.
+
+    The decorated coroutine will raise ``UnsupportedVersionError`` (not yet
+    implemented) before making any HTTP request when the connected server is
+    older than *version*.  Until that check is wired up this decorator acts as
+    a transparent pass-through.
+
+    :param version: The minimum server version required to call the endpoint.
+    :type version: str
+    :returns: A decorator that wraps the coroutine with a version guard.
+    """
+
+    def decorator(
+        func: Callable[_P, Awaitable[_T]],
+        /,
+    ) -> Callable[_P, Awaitable[_T]]:
+        # TODO: wrap func to check server_version and raise UnsupportedVersionError
+        # when server_version < version
+        return func
+
+    return decorator
 
 
 @dataclass(frozen=True, slots=True)
@@ -18,7 +68,7 @@ class Since:
 def since(
     version: str,
     /,
-) -> FieldInfo:
+) -> Any:
     """Create a :class:`~pydantic.fields.FieldInfo` that marks a field as available since *version*.
 
     The returned field defaults to :data:`unsupported`, so models built from
@@ -48,7 +98,10 @@ class Unsupported:
 
     @classmethod
     def __get_pydantic_core_schema__(
-        cls, source_type: type[object], handler: GetCoreSchemaHandler
+        cls,
+        source_type: type[Any],
+        handler: GetCoreSchemaHandler,
+        /,
     ) -> CoreSchema:
         """Return a Pydantic core schema that only accepts the :data:`unsupported` sentinel.
 
@@ -101,8 +154,9 @@ class _SinceFieldInfo(FieldInfo):  # ty:ignore[subclass-of-final-class]
     @classmethod
     def __get_pydantic_core_schema__(
         cls,
-        source_type: type[object],
+        source_type: type[Any],
         handler: GetCoreSchemaHandler,
+        /,
     ) -> CoreSchema:
         """Delegate schema generation to the base :class:`~pydantic.fields.FieldInfo`.
 
@@ -113,10 +167,20 @@ class _SinceFieldInfo(FieldInfo):  # ty:ignore[subclass-of-final-class]
         """
         return handler(FieldInfo)
 
-    def __call__(self, cls: type[object], /) -> type[object]:
-        """Return *cls* unchanged, making this instance usable as a class decorator.
+    def __call__(
+        self,
+        cls: type[_C],
+        /,
+    ) -> type[_C]:
+        """Apply version metadata to *cls* and return it, making this instance usable as a class decorator.
+
+        Iterates over this field's metadata and, for each :class:`Since` entry found,
+        sets ``cls.__since__`` to the corresponding version string.
 
         :param cls: The class to decorate.
-        :returns: *cls* unmodified.
+        :returns: *cls* with ``__since__`` set if a :class:`Since` entry is present in the metadata.
         """
+        for item in self.metadata:
+            if isinstance(item, Since):
+                cls.__since__ = item.version  # ty:ignore[unresolved-attribute]
         return cls
