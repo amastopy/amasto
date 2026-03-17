@@ -49,9 +49,6 @@ select = [
     "UP",  # pyupgrade
     "W",  # pycodestyle warnings
 ]
-ignore = [
-    "B024",  # empty abstract base class should be allowed
-]
 
 [tool.ruff.lint.isort]
 case-sensitive = true
