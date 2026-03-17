@@ -1,12 +1,11 @@
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Final, ParamSpec, TypeVar
-from collections.abc import Awaitable
-
 from pydantic import GetCoreSchemaHandler
 from pydantic.fields import FieldInfo
 from pydantic_core import CoreSchema, PydanticCustomError, core_schema
+from typing import Any, Final, ParamSpec, TypeVar
 
 __all__: Final = (
     "Requires",

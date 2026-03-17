@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from typing import Any, Literal
-
-from pydantic import BaseModel, ConfigDict
-
 from amasto._version import Unsupported, since
+from pydantic import BaseModel, ConfigDict
+from typing import Any, Literal
 
 __all__ = ("MediaAttachment",)
 

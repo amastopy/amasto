@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict
-
-from amasto._version import since
-
 from ._custom_emoji import CustomEmoji
 from ._reaction import Reaction
 from ._status import StatusTag
+from amasto._version import since
+from pydantic import BaseModel, ConfigDict
 
 __all__ = ("Announcement", "AnnouncementAccount", "AnnouncementStatus")
 

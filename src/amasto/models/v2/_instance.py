@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict, Field
-
 from amasto._version import Unsupported, since
 from amasto.models.v1._account import Account
 from amasto.models.v1._rule import Rule
+from pydantic import BaseModel, ConfigDict, Field
 
 __all__ = (
     "Instance",
@@ -163,9 +162,7 @@ class InstanceConfiguration(BaseModel):
     polls: InstanceConfigurationPolls
     translation: InstanceConfigurationTranslation
     vapid: InstanceConfigurationVapid | Unsupported = since("4.3.0")
-    timelines_access: (
-        InstanceConfigurationTimelinesAccess | Unsupported
-    ) = since("4.5.0")
+    timelines_access: InstanceConfigurationTimelinesAccess | Unsupported = since("4.5.0")
     limited_federation: bool | Unsupported = since("4.4.0")
 
 

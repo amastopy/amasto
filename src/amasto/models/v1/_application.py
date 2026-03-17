@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict
-
 from amasto._version import Unsupported, since
+from pydantic import BaseModel, ConfigDict
 
 __all__ = ("Application", "CredentialApplication")
 

@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict
-
-from amasto._version import Unsupported, since
-
 from ._account import Account
 from ._custom_emoji import CustomEmoji
 from ._media_attachment import MediaAttachment
 from ._quote import Quote, ShallowQuote
+from amasto._version import Unsupported, since
+from pydantic import BaseModel, ConfigDict
 
 __all__ = ("StatusEdit", "StatusEditPoll", "StatusEditPollOption")
 

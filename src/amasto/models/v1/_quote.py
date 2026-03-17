@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal
-
-from pydantic import BaseModel, ConfigDict
-
 from amasto._version import since
+from pydantic import BaseModel, ConfigDict
+from typing import TYPE_CHECKING, Literal
 
 if TYPE_CHECKING:
     from amasto.models.v1._status import Status

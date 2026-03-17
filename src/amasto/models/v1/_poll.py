@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict
-
-from amasto._version import since
-
 from ._custom_emoji import CustomEmoji
+from amasto._version import since
+from pydantic import BaseModel, ConfigDict
 
 __all__ = ("Poll", "PollOption")
 

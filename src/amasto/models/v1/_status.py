@@ -1,12 +1,5 @@
 from __future__ import annotations
 
-from typing import Literal
-
-from pydantic import BaseModel, ConfigDict
-
-from amasto._version import Unsupported, since
-from amasto.models.v2._filter import FilterResult
-
 from ._account import Account
 from ._application import Application
 from ._custom_emoji import CustomEmoji
@@ -14,6 +7,10 @@ from ._media_attachment import MediaAttachment
 from ._poll import Poll
 from ._preview_card import PreviewCard
 from ._quote import Quote, QuoteApproval, ShallowQuote
+from amasto._version import Unsupported, since
+from amasto.models.v2._filter import FilterResult
+from pydantic import BaseModel, ConfigDict
+from typing import Literal
 
 __all__ = ("Status", "StatusMention", "StatusTag")
 
@@ -54,9 +51,7 @@ class Status(BaseModel):
     media_attachments: list[MediaAttachment] | Unsupported = since("0.6.0")
     mentions: list[StatusMention] | Unsupported = since("0.6.0")
     tags: list[StatusTag] | Unsupported = since("0.6.0")
-    visibility: (
-        Literal["public", "unlisted", "private", "direct"] | Unsupported
-    ) = since("0.9.9")
+    visibility: Literal["public", "unlisted", "private", "direct"] | Unsupported = since("0.9.9")
     sensitive: bool | Unsupported = since("0.9.9")
     application: Application | None | Unsupported = since("0.9.9")
     spoiler_text: str | Unsupported = since("1.0.0")

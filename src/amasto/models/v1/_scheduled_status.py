@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-from typing import Literal
-
-from pydantic import BaseModel, ConfigDict
-
-from amasto._version import Unsupported, since
-
 from ._media_attachment import MediaAttachment
+from amasto._version import Unsupported, since
+from pydantic import BaseModel, ConfigDict
+from typing import Literal
 
 __all__ = (
     "ScheduledStatus",

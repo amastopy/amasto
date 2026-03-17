@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from enum import StrEnum
-from typing import Any, Final
-
 from httpx import AsyncClient
 from pydantic import BaseModel
+from typing import Any, Final
 
 __all__: Final = (
     "Inbound",
@@ -57,7 +56,9 @@ class NodeInfo(BaseModel):
             for link in jrd_links:
                 link_rel = link.get("rel")
                 if link_rel in _NODEINFO_SCHEMATA:
-                    if latest_link is None or _NODEINFO_SCHEMATA.index(link_rel) > _NODEINFO_SCHEMATA.index(latest_link["rel"]):
+                    if latest_link is None or _NODEINFO_SCHEMATA.index(link_rel) > _NODEINFO_SCHEMATA.index(
+                        latest_link["rel"]
+                    ):
                         latest_link = link
             if latest_link is None:
                 raise ValueError("No supported NodeInfo schema found in JRD links")

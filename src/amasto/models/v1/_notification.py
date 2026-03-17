@@ -1,16 +1,13 @@
 from __future__ import annotations
 
-from typing import Literal
-
-from pydantic import BaseModel, ConfigDict
-
-from amasto._version import Unsupported, since
-
 from ._account import Account
 from ._account_warning import AccountWarning
 from ._relationship_severance_event import RelationshipSeveranceEvent
 from ._report import Report
 from ._status import Status
+from amasto._version import Unsupported, since
+from pydantic import BaseModel, ConfigDict
+from typing import Literal
 
 __all__ = ("Notification",)
 

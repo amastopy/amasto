@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict
-
-from amasto._version import since
-
 from ._status import Status
+from amasto._version import since
+from pydantic import BaseModel, ConfigDict
 
 __all__ = ("Context",)
 

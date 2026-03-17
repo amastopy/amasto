@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-from typing import Literal
-
-from pydantic import BaseModel, ConfigDict
-
-from amasto._version import Unsupported, since
-
 from ._custom_emoji import CustomEmoji
 from ._role import Role
+from amasto._version import Unsupported, since
+from pydantic import BaseModel, ConfigDict
+from typing import Literal
 
 __all__ = (
     "Account",
@@ -51,9 +48,7 @@ class AccountSource(BaseModel):
     hide_collections: bool | None | Unsupported = since("4.1.0")
     indexable: bool | Unsupported = since("4.3.0")
     attribution_domains: list[str] | Unsupported = since("4.4.0")
-    quote_policy: (
-        Literal["public", "followers", "nobody"] | Unsupported
-    ) = since("4.5.0")
+    quote_policy: Literal["public", "followers", "nobody"] | Unsupported = since("4.5.0")
 
 
 class Account(BaseModel):

@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict, Field
-
 from amasto._version import Unsupported, since, unsupported
+from pydantic import BaseModel, ConfigDict, Field
 
 __all__ = ("WebPushAlerts", "WebPushSubscription")
 
@@ -19,12 +18,8 @@ class WebPushAlerts(BaseModel):
     follow_request: bool | Unsupported = since("3.1.0")
     status: bool | Unsupported = since("3.3.0")
     update: bool | Unsupported = since("3.5.0")
-    admin_sign_up: bool | Unsupported = Field(
-        default=unsupported, alias="admin.sign_up"
-    )
-    admin_report: bool | Unsupported = Field(
-        default=unsupported, alias="admin.report"
-    )
+    admin_sign_up: bool | Unsupported = Field(default=unsupported, alias="admin.sign_up")
+    admin_report: bool | Unsupported = Field(default=unsupported, alias="admin.report")
 
 
 @since("2.4.0")

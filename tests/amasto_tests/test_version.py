@@ -1,9 +1,8 @@
 from __future__ import annotations
-import pytest
-
-from pydantic import BaseModel
 
 from amasto._version import Unsupported, requires, since, unsupported
+from pydantic import BaseModel
+import pytest
 
 
 def test_since() -> None:

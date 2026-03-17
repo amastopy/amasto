@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from typing import Literal
-
-from pydantic import BaseModel, ConfigDict
-
 from amasto._version import since
+from pydantic import BaseModel, ConfigDict
+from typing import Literal
 
 __all__ = ("RelationshipSeveranceEvent",)
 

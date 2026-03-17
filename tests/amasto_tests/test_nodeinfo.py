@@ -1,9 +1,5 @@
 from __future__ import annotations
 
-import httpx
-import pytest
-import respx
-
 from amasto._nodeinfo import (
     _NODEINFO_SCHEMA_2_0,
     _NODEINFO_SCHEMA_2_1,
@@ -16,6 +12,9 @@ from amasto._nodeinfo import (
     Usage,
     Users,
 )
+import httpx
+import pytest
+import respx
 
 
 def _make_nodeinfo_dict(
@@ -83,9 +82,7 @@ def test_usage_optional_fields() -> None:
 
 
 def test_users_properties() -> None:
-    users = Users.model_validate(
-        {"total": 100, "activeHalfyear": 50, "activeMonth": 30}
-    )
+    users = Users.model_validate({"total": 100, "activeHalfyear": 50, "activeMonth": 30})
     assert users.active_halfyear == 50
     assert users.active_month == 30
 
@@ -104,9 +101,7 @@ def test_software_model() -> None:
 
 
 def test_services_model() -> None:
-    services = Services.model_validate(
-        {"inbound": ["imap", "pop3"], "outbound": ["smtp"]}
-    )
+    services = Services.model_validate({"inbound": ["imap", "pop3"], "outbound": ["smtp"]})
     assert services.inbound == [Inbound.IMAP, Inbound.POP3]
     assert services.outbound == [Outbound.SMTP]
 
@@ -117,9 +112,7 @@ def test_protocol_enum() -> None:
 
 
 def test_multiple_protocols() -> None:
-    info = NodeInfo.model_validate(
-        _make_nodeinfo_dict(protocols=["activitypub", "diaspora"])
-    )
+    info = NodeInfo.model_validate(_make_nodeinfo_dict(protocols=["activitypub", "diaspora"]))
     assert info.protocols == [Protocol.ACTIVITYPUB, Protocol.DIASPORA]
 
 
@@ -138,12 +131,8 @@ async def test_fetch_prefers_latest_schema() -> None:
     nodeinfo_data = _make_nodeinfo_dict()
 
     with respx.mock:
-        respx.get(f"{base_url}/.well-known/nodeinfo").mock(
-            return_value=httpx.Response(200, json=jrd)
-        )
-        respx.get(f"{base_url}/nodeinfo/2.1").mock(
-            return_value=httpx.Response(200, json=nodeinfo_data)
-        )
+        respx.get(f"{base_url}/.well-known/nodeinfo").mock(return_value=httpx.Response(200, json=jrd))
+        respx.get(f"{base_url}/nodeinfo/2.1").mock(return_value=httpx.Response(200, json=nodeinfo_data))
         info = await NodeInfo.fetch(base_url)
 
     assert info.software.name == "mastodon"
@@ -160,12 +149,8 @@ async def test_fetch_with_only_2_0_schema() -> None:
     nodeinfo_data = _make_nodeinfo_dict(version="2.0")
 
     with respx.mock:
-        respx.get(f"{base_url}/.well-known/nodeinfo").mock(
-            return_value=httpx.Response(200, json=jrd)
-        )
-        respx.get(f"{base_url}/nodeinfo/2.0").mock(
-            return_value=httpx.Response(200, json=nodeinfo_data)
-        )
+        respx.get(f"{base_url}/.well-known/nodeinfo").mock(return_value=httpx.Response(200, json=jrd))
+        respx.get(f"{base_url}/nodeinfo/2.0").mock(return_value=httpx.Response(200, json=nodeinfo_data))
         info = await NodeInfo.fetch(base_url)
 
     assert info.version == "2.0"
@@ -181,9 +166,7 @@ async def test_fetch_no_supported_schema_raises() -> None:
     }
 
     with respx.mock:
-        respx.get(f"{base_url}/.well-known/nodeinfo").mock(
-            return_value=httpx.Response(200, json=jrd)
-        )
+        respx.get(f"{base_url}/.well-known/nodeinfo").mock(return_value=httpx.Response(200, json=jrd))
         with pytest.raises(ValueError, match="No supported NodeInfo schema"):
             await NodeInfo.fetch(base_url)
 
@@ -194,9 +177,7 @@ async def test_fetch_empty_links_raises() -> None:
     jrd: dict = {"links": []}
 
     with respx.mock:
-        respx.get(f"{base_url}/.well-known/nodeinfo").mock(
-            return_value=httpx.Response(200, json=jrd)
-        )
+        respx.get(f"{base_url}/.well-known/nodeinfo").mock(return_value=httpx.Response(200, json=jrd))
         with pytest.raises(ValueError, match="No supported NodeInfo schema"):
             await NodeInfo.fetch(base_url)
 
@@ -211,9 +192,7 @@ async def test_fetch_missing_href_raises() -> None:
     }
 
     with respx.mock:
-        respx.get(f"{base_url}/.well-known/nodeinfo").mock(
-            return_value=httpx.Response(200, json=jrd)
-        )
+        respx.get(f"{base_url}/.well-known/nodeinfo").mock(return_value=httpx.Response(200, json=jrd))
         with pytest.raises(ValueError, match="missing 'href' field"):
             await NodeInfo.fetch(base_url)
 
@@ -223,9 +202,7 @@ async def test_fetch_jrd_http_error_raises() -> None:
     base_url = "https://mastodon.example"
 
     with respx.mock:
-        respx.get(f"{base_url}/.well-known/nodeinfo").mock(
-            return_value=httpx.Response(500)
-        )
+        respx.get(f"{base_url}/.well-known/nodeinfo").mock(return_value=httpx.Response(500))
         with pytest.raises(httpx.HTTPStatusError):
             await NodeInfo.fetch(base_url)
 
@@ -259,19 +236,14 @@ async def test_fetch_mastodon_social() -> None:
         "metadata": {
             "nodeName": "Mastodon",
             "nodeDescription": (
-                "The original server of Mastodon, operated by Mastodon GmbH"
-                " for the common good.\r\n\r\n"
+                "The original server of Mastodon, operated by Mastodon GmbH for the common good.\r\n\r\n"
             ),
         },
     }
 
     with respx.mock:
-        respx.get(f"{base_url}/.well-known/nodeinfo").mock(
-            return_value=httpx.Response(200, json=jrd)
-        )
-        respx.get(f"{base_url}/nodeinfo/2.0").mock(
-            return_value=httpx.Response(200, json=nodeinfo_json)
-        )
+        respx.get(f"{base_url}/.well-known/nodeinfo").mock(return_value=httpx.Response(200, json=jrd))
+        respx.get(f"{base_url}/nodeinfo/2.0").mock(return_value=httpx.Response(200, json=nodeinfo_json))
         info = await NodeInfo.fetch(base_url)
 
     assert info.version == "2.0"
