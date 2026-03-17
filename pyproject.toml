@@ -22,3 +22,40 @@ dev = [
     "ruff>=0.15.6",
     "ty>=0.0.23",
 ]
+
+[tool.ruff]
+line-length = 120
+src = ["src"]
+
+[tool.ruff.lint]
+select = [
+    "ANN",  # flake8-annotations
+    "B",  # flake8-bugbear
+    "BLE",  # flake8-blind-except
+    "C4",  # flake8-comprehensions
+    "E",  # pycodestyle errors
+    "F",  # Pyflakes
+    "FA",  # flake8-future-annotations
+    "I",  # isort
+    "N",  # pep8-naming
+    "Q",  # flake8-quotes
+    "RET",  # flake8-return
+    "RUF",  # Ruff-specific rules
+    "S",  # flake9-bandit
+    "SIM",  # flake8-simplify
+    "SLF",  # flake8-self
+    "SLOT",  # flake8-slots
+    "TC",  # flake8-type-checking
+    "UP",  # pyupgrade
+    "W",  # pycodestyle warnings
+]
+
+[tool.ruff.lint.isort]
+case-sensitive = true
+force-sort-within-sections = true
+no-sections = true
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+asyncio_default_fixture_loop_scope="function"
