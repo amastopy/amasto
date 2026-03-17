@@ -23,17 +23,6 @@ dev = [
     "ty>=0.0.23",
 ]
 
-[tool.coverage.report]
-exclude_lines = [
-    "if TYPE_CHECKING:",
-]
-
-[tool.coverage.run]
-source = ["src"]
-omit = [
-    "test/*",
-]
-
 [tool.ruff]
 line-length = 120
 src = ["src"]
@@ -66,13 +55,10 @@ ignore = [
 
 [tool.ruff.lint.isort]
 case-sensitive = true
-extra-standard-library = [
-    "typing_extensions",
-]
 force-sort-within-sections = true
 no-sections = true
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
-testpaths = ["test"]
+testpaths = ["tests"]
 asyncio_default_fixture_loop_scope="function"
