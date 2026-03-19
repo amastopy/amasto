@@ -12,9 +12,16 @@ class _SuggestionsParams(TypedDict, total=False):
 
 
 get_suggestions: Endpoint[list[Account], _SuggestionsParams, None] = Endpoint(
-    "GET", "/api/v1/suggestions", list[Account], params=_SuggestionsParams, requires="2.4.3",
+    "GET",
+    "/api/v1/suggestions",
+    list[Account],
+    params=_SuggestionsParams,
+    requires="2.4.3",
 )
 
 delete_suggestions: EndpointTemplate[dict, None, None] = EndpointTemplate(
-    "DELETE", "/api/v1/suggestions/{account_id}", dict, requires="2.4.3",
+    "DELETE",
+    "/api/v1/suggestions/{account_id}",
+    dict,
+    requires="2.4.3",
 )

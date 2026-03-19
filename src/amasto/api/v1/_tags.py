@@ -7,7 +7,10 @@ __all__ = ("get_tags", "tags")
 
 
 get_tags: EndpointTemplate[Tag, None, None] = EndpointTemplate(
-    "GET", "/api/v1/tags/{name}", Tag, requires="4.0.0",
+    "GET",
+    "/api/v1/tags/{name}",
+    Tag,
+    requires="4.0.0",
 )
 
 

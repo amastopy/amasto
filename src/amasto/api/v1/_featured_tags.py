@@ -12,15 +12,25 @@ class _CreateFeaturedTagBody(TypedDict):
 
 
 get_featured_tags: Endpoint[list[FeaturedTag], None, None] = Endpoint(
-    "GET", "/api/v1/featured_tags", list[FeaturedTag], requires="3.3.0",
+    "GET",
+    "/api/v1/featured_tags",
+    list[FeaturedTag],
+    requires="3.3.0",
 )
 
 post_featured_tags: Endpoint[FeaturedTag, None, _CreateFeaturedTagBody] = Endpoint(
-    "POST", "/api/v1/featured_tags", FeaturedTag, body=_CreateFeaturedTagBody, requires="3.3.0",
+    "POST",
+    "/api/v1/featured_tags",
+    FeaturedTag,
+    body=_CreateFeaturedTagBody,
+    requires="3.3.0",
 )
 
 delete_featured_tags: EndpointTemplate[dict, None, None] = EndpointTemplate(
-    "DELETE", "/api/v1/featured_tags/{id}", dict, requires="3.3.0",
+    "DELETE",
+    "/api/v1/featured_tags/{id}",
+    dict,
+    requires="3.3.0",
 )
 
 

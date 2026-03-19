@@ -15,7 +15,10 @@ class _CreateAppBody(TypedDict, total=False):
 
 
 post_apps: Endpoint[CredentialApplication, None, _CreateAppBody] = Endpoint(
-    "POST", "/api/v1/apps", CredentialApplication, body=_CreateAppBody,
+    "POST",
+    "/api/v1/apps",
+    CredentialApplication,
+    body=_CreateAppBody,
 )
 
 

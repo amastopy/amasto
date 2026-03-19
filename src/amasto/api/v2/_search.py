@@ -21,5 +21,9 @@ class _SearchParams(TypedDict, total=False):
 
 
 get_search: Endpoint[Search, _SearchParams, None] = Endpoint(
-    "GET", "/api/v2/search", Search, params=_SearchParams, requires="2.4.1",
+    "GET",
+    "/api/v2/search",
+    Search,
+    params=_SearchParams,
+    requires="2.4.1",
 )

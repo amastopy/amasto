@@ -6,5 +6,8 @@ from ...models.v1 import Preferences
 __all__ = ("get_preferences",)
 
 get_preferences: Endpoint[Preferences, None, None] = Endpoint(
-    "GET", "/api/v1/preferences", Preferences, requires="2.8.0",
+    "GET",
+    "/api/v1/preferences",
+    Preferences,
+    requires="2.8.0",
 )

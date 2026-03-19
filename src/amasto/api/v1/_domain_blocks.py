@@ -12,13 +12,22 @@ class _DomainBlockBody(TypedDict):
 
 
 get_domain_blocks: Endpoint[list[str], PaginationParams, None] = Endpoint(
-    "GET", "/api/v1/domain_blocks", list[str], params=PaginationParams,
+    "GET",
+    "/api/v1/domain_blocks",
+    list[str],
+    params=PaginationParams,
 )
 
 post_domain_blocks: Endpoint[dict, None, _DomainBlockBody] = Endpoint(
-    "POST", "/api/v1/domain_blocks", dict, body=_DomainBlockBody,
+    "POST",
+    "/api/v1/domain_blocks",
+    dict,
+    body=_DomainBlockBody,
 )
 
 delete_domain_blocks: Endpoint[dict, None, _DomainBlockBody] = Endpoint(
-    "DELETE", "/api/v1/domain_blocks", dict, body=_DomainBlockBody,
+    "DELETE",
+    "/api/v1/domain_blocks",
+    dict,
+    body=_DomainBlockBody,
 )

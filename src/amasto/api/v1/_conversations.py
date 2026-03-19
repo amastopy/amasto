@@ -8,11 +8,18 @@ __all__ = ("conversations", "delete_conversations", "get_conversations")
 
 
 get_conversations: Endpoint[list[Conversation], PaginationParams, None] = Endpoint(
-    "GET", "/api/v1/conversations", list[Conversation], params=PaginationParams, requires="2.6.0",
+    "GET",
+    "/api/v1/conversations",
+    list[Conversation],
+    params=PaginationParams,
+    requires="2.6.0",
 )
 
 delete_conversations: EndpointTemplate[dict, None, None] = EndpointTemplate(
-    "DELETE", "/api/v1/conversations/{id}", dict, requires="2.6.0",
+    "DELETE",
+    "/api/v1/conversations/{id}",
+    dict,
+    requires="2.6.0",
 )
 
 

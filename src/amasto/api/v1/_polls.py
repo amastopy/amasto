@@ -8,7 +8,10 @@ __all__ = ("get_polls", "polls")
 
 
 get_polls: EndpointTemplate[Poll, None, None] = EndpointTemplate(
-    "GET", "/api/v1/polls/{id}", Poll, requires="2.8.0",
+    "GET",
+    "/api/v1/polls/{id}",
+    Poll,
+    requires="2.8.0",
 )
 
 
@@ -21,7 +24,11 @@ class _PollsById:
 
     def __init__(self, id: str, /) -> None:
         self.post_votes: Endpoint[Poll, None, _VotesBody] = Endpoint(
-            "POST", f"/api/v1/polls/{id}/votes", Poll, body=_VotesBody, requires="2.8.0",
+            "POST",
+            f"/api/v1/polls/{id}/votes",
+            Poll,
+            body=_VotesBody,
+            requires="2.8.0",
         )
 
 

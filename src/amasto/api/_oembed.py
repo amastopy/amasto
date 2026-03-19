@@ -13,5 +13,9 @@ class _OEmbedParams(TypedDict, total=False):
 
 
 get_oembed: Endpoint[dict, _OEmbedParams, None] = Endpoint(
-    "GET", "/api/oembed", dict, params=_OEmbedParams, requires="1.0.0",
+    "GET",
+    "/api/oembed",
+    dict,
+    params=_OEmbedParams,
+    requires="1.0.0",
 )

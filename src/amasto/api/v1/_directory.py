@@ -15,5 +15,9 @@ class _DirectoryParams(TypedDict, total=False):
 
 
 get_directory: Endpoint[list[Account], _DirectoryParams, None] = Endpoint(
-    "GET", "/api/v1/directory", list[Account], params=_DirectoryParams, requires="3.0.0",
+    "GET",
+    "/api/v1/directory",
+    list[Account],
+    params=_DirectoryParams,
+    requires="3.0.0",
 )

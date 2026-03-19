@@ -8,7 +8,10 @@ __all__ = ("follow_requests", "get_follow_requests")
 
 
 get_follow_requests: Endpoint[list[Account], PaginationParams, None] = Endpoint(
-    "GET", "/api/v1/follow_requests", list[Account], params=PaginationParams,
+    "GET",
+    "/api/v1/follow_requests",
+    list[Account],
+    params=PaginationParams,
 )
 
 
@@ -17,10 +20,14 @@ class _FollowRequestsById:
 
     def __init__(self, account_id: str, /) -> None:
         self.post_authorize = Endpoint(
-            "POST", f"/api/v1/follow_requests/{account_id}/authorize", Relationship,
+            "POST",
+            f"/api/v1/follow_requests/{account_id}/authorize",
+            Relationship,
         )
         self.post_reject = Endpoint(
-            "POST", f"/api/v1/follow_requests/{account_id}/reject", Relationship,
+            "POST",
+            f"/api/v1/follow_requests/{account_id}/reject",
+            Relationship,
         )
 
 

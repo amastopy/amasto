@@ -7,5 +7,8 @@ from ...models.v1 import Status
 __all__ = ("get_favourites",)
 
 get_favourites: Endpoint[list[Status], PaginationParams, None] = Endpoint(
-    "GET", "/api/v1/favourites", list[Status], params=PaginationParams,
+    "GET",
+    "/api/v1/favourites",
+    list[Status],
+    params=PaginationParams,
 )

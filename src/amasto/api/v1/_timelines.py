@@ -43,22 +43,42 @@ class _TimelinesNamespace:
     __slots__ = ()
 
     get_public: Endpoint[list[Status], _PublicTimelineParams, None] = Endpoint(
-        "GET", "/api/v1/timelines/public", list[Status], params=_PublicTimelineParams,
+        "GET",
+        "/api/v1/timelines/public",
+        list[Status],
+        params=_PublicTimelineParams,
     )
     get_home: Endpoint[list[Status], PaginationParams, None] = Endpoint(
-        "GET", "/api/v1/timelines/home", list[Status], params=PaginationParams,
+        "GET",
+        "/api/v1/timelines/home",
+        list[Status],
+        params=PaginationParams,
     )
     get_link: Endpoint[list[Status], _LinkTimelineParams, None] = Endpoint(
-        "GET", "/api/v1/timelines/link", list[Status], params=_LinkTimelineParams, requires="4.3.0",
+        "GET",
+        "/api/v1/timelines/link",
+        list[Status],
+        params=_LinkTimelineParams,
+        requires="4.3.0",
     )
     get_direct: Endpoint[list[Status], PaginationParams, None] = Endpoint(
-        "GET", "/api/v1/timelines/direct", list[Status], params=PaginationParams,
+        "GET",
+        "/api/v1/timelines/direct",
+        list[Status],
+        params=PaginationParams,
     )
     get_tag: EndpointTemplate[list[Status], _TagTimelineParams, None] = EndpointTemplate(
-        "GET", "/api/v1/timelines/tag/{hashtag}", list[Status], params=_TagTimelineParams,
+        "GET",
+        "/api/v1/timelines/tag/{hashtag}",
+        list[Status],
+        params=_TagTimelineParams,
     )
     get_list: EndpointTemplate[list[Status], PaginationParams, None] = EndpointTemplate(
-        "GET", "/api/v1/timelines/list/{list_id}", list[Status], params=PaginationParams, requires="2.1.0",
+        "GET",
+        "/api/v1/timelines/list/{list_id}",
+        list[Status],
+        params=PaginationParams,
+        requires="2.1.0",
     )
 
 

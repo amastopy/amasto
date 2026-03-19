@@ -12,5 +12,9 @@ class _SuggestionsParams(TypedDict, total=False):
 
 
 get_suggestions: Endpoint[list[Suggestion], _SuggestionsParams, None] = Endpoint(
-    "GET", "/api/v2/suggestions", list[Suggestion], params=_SuggestionsParams, requires="3.4.0",
+    "GET",
+    "/api/v2/suggestions",
+    list[Suggestion],
+    params=_SuggestionsParams,
+    requires="3.4.0",
 )

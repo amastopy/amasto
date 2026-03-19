@@ -14,7 +14,11 @@ class _EmailsNamespace:
     __slots__ = ()
 
     post_confirmations: Endpoint[dict, None, _ConfirmationBody] = Endpoint(
-        "POST", "/api/v1/emails/confirmations", dict, body=_ConfirmationBody, requires="2.7.2",
+        "POST",
+        "/api/v1/emails/confirmations",
+        dict,
+        body=_ConfirmationBody,
+        requires="2.7.2",
     )
 
 

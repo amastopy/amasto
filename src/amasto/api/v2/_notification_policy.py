@@ -20,7 +20,11 @@ class _NotificationPolicyNamespace:
 
     get = Endpoint("GET", "/api/v2/notifications/policy", NotificationPolicy, requires="4.3.0")
     patch: Endpoint[NotificationPolicy, None, _UpdatePolicyBody] = Endpoint(
-        "PATCH", "/api/v2/notifications/policy", NotificationPolicy, body=_UpdatePolicyBody, requires="4.3.0",
+        "PATCH",
+        "/api/v2/notifications/policy",
+        NotificationPolicy,
+        body=_UpdatePolicyBody,
+        requires="4.3.0",
     )
 
 

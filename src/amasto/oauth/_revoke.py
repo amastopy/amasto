@@ -13,5 +13,9 @@ class _RevokeBody(TypedDict, total=False):
 
 
 post_revoke: Endpoint[dict, None, _RevokeBody] = Endpoint(
-    "POST", "/oauth/revoke", dict, body=_RevokeBody, requires="1.5.0",
+    "POST",
+    "/oauth/revoke",
+    dict,
+    body=_RevokeBody,
+    requires="1.5.0",
 )

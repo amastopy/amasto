@@ -48,11 +48,19 @@ class _PushNamespace:
     __slots__ = ()
 
     post_subscription: Endpoint[WebPushSubscription, None, _CreatePushBody] = Endpoint(
-        "POST", "/api/v1/push/subscription", WebPushSubscription, body=_CreatePushBody, requires="2.4.0",
+        "POST",
+        "/api/v1/push/subscription",
+        WebPushSubscription,
+        body=_CreatePushBody,
+        requires="2.4.0",
     )
     get_subscription = Endpoint("GET", "/api/v1/push/subscription", WebPushSubscription, requires="2.4.0")
     put_subscription: Endpoint[WebPushSubscription, None, _UpdatePushBody] = Endpoint(
-        "PUT", "/api/v1/push/subscription", WebPushSubscription, body=_UpdatePushBody, requires="2.4.0",
+        "PUT",
+        "/api/v1/push/subscription",
+        WebPushSubscription,
+        body=_UpdatePushBody,
+        requires="2.4.0",
     )
     delete_subscription = Endpoint("DELETE", "/api/v1/push/subscription", dict, requires="2.4.0")
 

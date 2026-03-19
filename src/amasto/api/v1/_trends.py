@@ -16,13 +16,25 @@ class _TrendsNamespace:
     __slots__ = ()
 
     get_tags: Endpoint[list[Tag], _TrendsParams, None] = Endpoint(
-        "GET", "/api/v1/trends/tags", list[Tag], params=_TrendsParams, requires="3.0.0",
+        "GET",
+        "/api/v1/trends/tags",
+        list[Tag],
+        params=_TrendsParams,
+        requires="3.0.0",
     )
     get_statuses: Endpoint[list[Status], _TrendsParams, None] = Endpoint(
-        "GET", "/api/v1/trends/statuses", list[Status], params=_TrendsParams, requires="3.5.0",
+        "GET",
+        "/api/v1/trends/statuses",
+        list[Status],
+        params=_TrendsParams,
+        requires="3.5.0",
     )
     get_links: Endpoint[list[TrendsLink], _TrendsParams, None] = Endpoint(
-        "GET", "/api/v1/trends/links", list[TrendsLink], params=_TrendsParams, requires="3.5.0",
+        "GET",
+        "/api/v1/trends/links",
+        list[TrendsLink],
+        params=_TrendsParams,
+        requires="3.5.0",
     )
 
 

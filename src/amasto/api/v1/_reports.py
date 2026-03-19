@@ -17,5 +17,9 @@ class _ReportBody(TypedDict, total=False):
 
 
 post_reports: Endpoint[Report, None, _ReportBody] = Endpoint(
-    "POST", "/api/v1/reports", Report, body=_ReportBody, requires="1.1.0",
+    "POST",
+    "/api/v1/reports",
+    Report,
+    body=_ReportBody,
+    requires="1.1.0",
 )

@@ -32,8 +32,11 @@ class _BulkRequestsBody(TypedDict):
 
 get_notifications: SubscriptableEndpoint[list[Notification], _NotificationsParams, None, Notification] = (
     SubscriptableEndpoint(
-        "GET", "/api/v1/notifications", list[Notification],
-        "/api/v1/notifications/{id}", Notification,
+        "GET",
+        "/api/v1/notifications",
+        list[Notification],
+        "/api/v1/notifications/{id}",
+        Notification,
         params=_NotificationsParams,
     )
 )
@@ -51,13 +54,24 @@ class _NotificationRequestsNamespace:
     __slots__ = ()
 
     post_accept: Endpoint[dict, None, _BulkRequestsBody] = Endpoint(
-        "POST", "/api/v1/notifications/requests/accept", dict, body=_BulkRequestsBody, requires="4.3.0",
+        "POST",
+        "/api/v1/notifications/requests/accept",
+        dict,
+        body=_BulkRequestsBody,
+        requires="4.3.0",
     )
     post_dismiss: Endpoint[dict, None, _BulkRequestsBody] = Endpoint(
-        "POST", "/api/v1/notifications/requests/dismiss", dict, body=_BulkRequestsBody, requires="4.3.0",
+        "POST",
+        "/api/v1/notifications/requests/dismiss",
+        dict,
+        body=_BulkRequestsBody,
+        requires="4.3.0",
     )
     get_merged: Endpoint[dict, None, None] = Endpoint(
-        "GET", "/api/v1/notifications/requests/merged", dict, requires="4.3.0",
+        "GET",
+        "/api/v1/notifications/requests/merged",
+        dict,
+        requires="4.3.0",
     )
 
     def __getitem__(self, id: str) -> _NotificationRequestsById:
@@ -76,10 +90,18 @@ class _NotificationsNamespace:
 
     post_clear = Endpoint("POST", "/api/v1/notifications/clear", dict)
     get_unread_count: Endpoint[dict, _UnreadCountParams, None] = Endpoint(
-        "GET", "/api/v1/notifications/unread_count", dict, params=_UnreadCountParams, requires="4.3.0",
+        "GET",
+        "/api/v1/notifications/unread_count",
+        dict,
+        params=_UnreadCountParams,
+        requires="4.3.0",
     )
     get_requests: Endpoint[list[NotificationRequest], PaginationParams, None] = Endpoint(
-        "GET", "/api/v1/notifications/requests", list[NotificationRequest], params=PaginationParams, requires="4.3.0",
+        "GET",
+        "/api/v1/notifications/requests",
+        list[NotificationRequest],
+        params=PaginationParams,
+        requires="4.3.0",
     )
     requests = _NotificationRequestsNamespace()
 

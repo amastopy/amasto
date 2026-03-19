@@ -25,21 +25,36 @@ class _ListAccountsBody(TypedDict):
 
 
 get_lists: SubscriptableEndpoint[list[List], None, None, List] = SubscriptableEndpoint(
-    "GET", "/api/v1/lists", list[List],
-    "/api/v1/lists/{id}", List,
-    requires="2.1.0", item_requires="2.1.0",
+    "GET",
+    "/api/v1/lists",
+    list[List],
+    "/api/v1/lists/{id}",
+    List,
+    requires="2.1.0",
+    item_requires="2.1.0",
 )
 
 post_lists: Endpoint[List, None, _CreateListBody] = Endpoint(
-    "POST", "/api/v1/lists", List, body=_CreateListBody, requires="2.1.0",
+    "POST",
+    "/api/v1/lists",
+    List,
+    body=_CreateListBody,
+    requires="2.1.0",
 )
 
 put_lists: EndpointTemplate[List, None, _UpdateListBody] = EndpointTemplate(
-    "PUT", "/api/v1/lists/{id}", List, body=_UpdateListBody, requires="2.1.0",
+    "PUT",
+    "/api/v1/lists/{id}",
+    List,
+    body=_UpdateListBody,
+    requires="2.1.0",
 )
 
 delete_lists: EndpointTemplate[dict, None, None] = EndpointTemplate(
-    "DELETE", "/api/v1/lists/{id}", dict, requires="2.1.0",
+    "DELETE",
+    "/api/v1/lists/{id}",
+    dict,
+    requires="2.1.0",
 )
 
 
@@ -48,13 +63,25 @@ class _ListsById:
 
     def __init__(self, id: str, /) -> None:
         self.get_accounts: Endpoint[list[Account], PaginationParams, None] = Endpoint(
-            "GET", f"/api/v1/lists/{id}/accounts", list[Account], params=PaginationParams, requires="2.1.0",
+            "GET",
+            f"/api/v1/lists/{id}/accounts",
+            list[Account],
+            params=PaginationParams,
+            requires="2.1.0",
         )
         self.post_accounts: Endpoint[dict, None, _ListAccountsBody] = Endpoint(
-            "POST", f"/api/v1/lists/{id}/accounts", dict, body=_ListAccountsBody, requires="2.1.0",
+            "POST",
+            f"/api/v1/lists/{id}/accounts",
+            dict,
+            body=_ListAccountsBody,
+            requires="2.1.0",
         )
         self.delete_accounts: Endpoint[dict, None, _ListAccountsBody] = Endpoint(
-            "DELETE", f"/api/v1/lists/{id}/accounts", dict, body=_ListAccountsBody, requires="2.1.0",
+            "DELETE",
+            f"/api/v1/lists/{id}/accounts",
+            dict,
+            body=_ListAccountsBody,
+            requires="2.1.0",
         )
 
 

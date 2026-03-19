@@ -70,21 +70,35 @@ class _InteractionPolicyBody(TypedDict, total=False):
 
 
 post_statuses: Endpoint[Status, None, _CreateStatusBody] = Endpoint(
-    "POST", "/api/v1/statuses", Status, body=_CreateStatusBody,
+    "POST",
+    "/api/v1/statuses",
+    Status,
+    body=_CreateStatusBody,
 )
 
 get_statuses: SubscriptableEndpoint[list[Status], _GetStatusesParams, None, Status] = SubscriptableEndpoint(
-    "GET", "/api/v1/statuses", list[Status],
-    "/api/v1/statuses/{id}", Status,
-    params=_GetStatusesParams, requires="4.3.0",
+    "GET",
+    "/api/v1/statuses",
+    list[Status],
+    "/api/v1/statuses/{id}",
+    Status,
+    params=_GetStatusesParams,
+    requires="4.3.0",
 )
 
 delete_statuses: EndpointTemplate[Status, _DeleteStatusParams, None] = EndpointTemplate(
-    "DELETE", "/api/v1/statuses/{id}", Status, params=_DeleteStatusParams,
+    "DELETE",
+    "/api/v1/statuses/{id}",
+    Status,
+    params=_DeleteStatusParams,
 )
 
 put_statuses: EndpointTemplate[Status, None, _EditStatusBody] = EndpointTemplate(
-    "PUT", "/api/v1/statuses/{id}", Status, body=_EditStatusBody, requires="3.5.0",
+    "PUT",
+    "/api/v1/statuses/{id}",
+    Status,
+    body=_EditStatusBody,
+    requires="3.5.0",
 )
 
 
@@ -98,7 +112,10 @@ class _StatusQuotesById:
 
     def __init__(self, status_id: str, quoting_status_id: str, /) -> None:
         self.post_revoke = Endpoint(
-            "POST", f"/api/v1/statuses/{status_id}/quotes/{quoting_status_id}/revoke", Status, requires="4.5.0",
+            "POST",
+            f"/api/v1/statuses/{status_id}/quotes/{quoting_status_id}/revoke",
+            Status,
+            requires="4.5.0",
         )
 
 
@@ -108,7 +125,11 @@ class _StatusQuotesNamespace:
     def __init__(self, status_id: str, /) -> None:
         self._status_id = status_id
         self.get_quotes: Endpoint[list[Status], PaginationParams, None] = Endpoint(
-            "GET", f"/api/v1/statuses/{status_id}/quotes", list[Status], params=PaginationParams, requires="4.5.0",
+            "GET",
+            f"/api/v1/statuses/{status_id}/quotes",
+            list[Status],
+            params=PaginationParams,
+            requires="4.5.0",
         )
 
     def __getitem__(self, quoting_status_id: str) -> _StatusQuotesById:
@@ -142,23 +163,39 @@ class _StatusesById:
 
         self.get_context = Endpoint("GET", f"{p}/context", Context)
         self.post_translate: Endpoint[Translation, None, _TranslateBody] = Endpoint(
-            "POST", f"{p}/translate", Translation, body=_TranslateBody, requires="4.0.0",
+            "POST",
+            f"{p}/translate",
+            Translation,
+            body=_TranslateBody,
+            requires="4.0.0",
         )
         self.get_reblogged_by: Endpoint[list[Account], PaginationParams, None] = Endpoint(
-            "GET", f"{p}/reblogged_by", list[Account], params=PaginationParams,
+            "GET",
+            f"{p}/reblogged_by",
+            list[Account],
+            params=PaginationParams,
         )
         self.get_favourited_by: Endpoint[list[Account], PaginationParams, None] = Endpoint(
-            "GET", f"{p}/favourited_by", list[Account], params=PaginationParams,
+            "GET",
+            f"{p}/favourited_by",
+            list[Account],
+            params=PaginationParams,
         )
         self.get_history: Endpoint[list[StatusEdit], None, None] = Endpoint(
-            "GET", f"{p}/history", list[StatusEdit], requires="3.5.0",
+            "GET",
+            f"{p}/history",
+            list[StatusEdit],
+            requires="3.5.0",
         )
         self.get_source = Endpoint("GET", f"{p}/source", StatusSource, requires="3.5.0")
 
         self.post_favourite = Endpoint("POST", f"{p}/favourite", Status)
         self.post_unfavourite = Endpoint("POST", f"{p}/unfavourite", Status)
         self.post_reblog: Endpoint[Status, None, _ReblogBody] = Endpoint(
-            "POST", f"{p}/reblog", Status, body=_ReblogBody,
+            "POST",
+            f"{p}/reblog",
+            Status,
+            body=_ReblogBody,
         )
         self.post_unreblog = Endpoint("POST", f"{p}/unreblog", Status)
         self.post_bookmark = Endpoint("POST", f"{p}/bookmark", Status, requires="3.1.0")
@@ -168,7 +205,11 @@ class _StatusesById:
         self.post_pin = Endpoint("POST", f"{p}/pin", Status, requires="1.6.0")
         self.post_unpin = Endpoint("POST", f"{p}/unpin", Status, requires="1.6.0")
         self.put_interaction_policy: Endpoint[Status, None, _InteractionPolicyBody] = Endpoint(
-            "PUT", f"{p}/interaction_policy", Status, body=_InteractionPolicyBody, requires="4.5.0",
+            "PUT",
+            f"{p}/interaction_policy",
+            Status,
+            body=_InteractionPolicyBody,
+            requires="4.5.0",
         )
 
         self.quotes = _StatusQuotesNamespace(id)
