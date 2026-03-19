@@ -45,7 +45,6 @@ class Status(BaseModel):
     in_reply_to_id: str | None
     in_reply_to_account_id: str | None
     reblog: Status | None
-
     media_attachments: list[MediaAttachment]
     mentions: list[StatusMention]
     tags: list[StatusTag]

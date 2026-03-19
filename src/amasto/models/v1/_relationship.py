@@ -11,15 +11,15 @@ class Relationship(BaseModel):
 
     id: str
     following: bool
+    followed_by: bool
+    blocking: bool
+    requested: bool
     showing_reblogs: bool | Unsupported = since("2.1.0")
     notifying: bool | Unsupported = since("3.3.0")
     languages: list[str] | None | Unsupported = since("4.0.0")
-    followed_by: bool
-    blocking: bool
     blocked_by: bool | Unsupported = since("2.8.0")
     muting: bool | Unsupported = since("1.1.0")
     muting_notifications: bool | Unsupported = since("2.1.0")
-    requested: bool
     requested_by: bool | Unsupported = since("4.1.0")
     domain_blocking: bool | Unsupported = since("1.4.0")
     endorsed: bool | Unsupported = since("2.5.0")
