@@ -15,7 +15,6 @@ from typing import Literal
 __all__ = ("Status", "StatusMention", "StatusTag")
 
 
-@since("0.6.0")
 class StatusMention(BaseModel):
     model_config = ConfigDict(frozen=True)
 
@@ -25,7 +24,6 @@ class StatusMention(BaseModel):
     acct: str
 
 
-@since("0.9.0")
 class StatusTag(BaseModel):
     model_config = ConfigDict(frozen=True)
 
@@ -48,12 +46,12 @@ class Status(BaseModel):
     in_reply_to_account_id: str | None
     reblog: Status | None
 
-    media_attachments: list[MediaAttachment] | Unsupported = since("0.6.0")
-    mentions: list[StatusMention] | Unsupported = since("0.6.0")
-    tags: list[StatusTag] | Unsupported = since("0.6.0")
-    visibility: Literal["public", "unlisted", "private", "direct"] | Unsupported = since("0.9.9")
-    sensitive: bool | Unsupported = since("0.9.9")
-    application: Application | None | Unsupported = since("0.9.9")
+    media_attachments: list[MediaAttachment]
+    mentions: list[StatusMention]
+    tags: list[StatusTag]
+    visibility: Literal["public", "unlisted", "private", "direct"]
+    sensitive: bool
+    application: Application | None
     spoiler_text: str | Unsupported = since("1.0.0")
     language: str | None | Unsupported = since("1.4.0")
     emojis: list[CustomEmoji] | Unsupported = since("2.0.0")

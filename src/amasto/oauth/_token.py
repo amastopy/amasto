@@ -18,5 +18,5 @@ class _TokenBody(TypedDict, total=False):
 
 
 post_token: Endpoint[Token, None, _TokenBody] = Endpoint(
-    "POST", "/oauth/token", Token, body=_TokenBody, requires="0.1.0",
+    "POST", "/oauth/token", Token, body=_TokenBody,
 )

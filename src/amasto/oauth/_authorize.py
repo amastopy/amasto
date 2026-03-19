@@ -19,5 +19,5 @@ class _AuthorizeParams(TypedDict, total=False):
 
 
 get_authorize: Endpoint[dict, _AuthorizeParams, None] = Endpoint(
-    "GET", "/oauth/authorize", dict, params=_AuthorizeParams, requires="0.1.0",
+    "GET", "/oauth/authorize", dict, params=_AuthorizeParams,
 )

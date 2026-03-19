@@ -19,7 +19,7 @@ class Relationship(BaseModel):
     blocked_by: bool | Unsupported = since("2.8.0")
     muting: bool | Unsupported = since("1.1.0")
     muting_notifications: bool | Unsupported = since("2.1.0")
-    requested: bool | Unsupported = since("0.9.9")
+    requested: bool
     requested_by: bool | Unsupported = since("4.1.0")
     domain_blocking: bool | Unsupported = since("1.4.0")
     endorsed: bool | Unsupported = since("2.5.0")
