@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-from ..._endpoint import Endpoint
+from ..._resource import HttpMethod
 from ...models.v1 import Marker
-from typing import TypedDict
+from typing import TYPE_CHECKING, TypedDict
 
-__all__ = ("get_markers", "post_markers")
+if TYPE_CHECKING:
+    from ..._client import Amasto
+
+__all__ = ("MarkersResource",)
 
 
 class _GetMarkersParams(TypedDict, total=False):
@@ -20,18 +23,21 @@ class _PostMarkersBody(TypedDict, total=False):
     notifications: _MarkerTimeline
 
 
-get_markers: Endpoint[dict[str, Marker], _GetMarkersParams, None] = Endpoint(
-    "GET",
-    "/api/v1/markers",
-    dict[str, Marker],
-    params=_GetMarkersParams,
-    requires="2.6.0",
-)
+class MarkersResource:
+    __slots__ = ("get", "post")
 
-post_markers: Endpoint[dict[str, Marker], None, _PostMarkersBody] = Endpoint(
-    "POST",
-    "/api/v1/markers",
-    dict[str, Marker],
-    body=_PostMarkersBody,
-    requires="2.6.0",
-)
+    def __init__(self, client: Amasto, /) -> None:
+        self.get: HttpMethod[dict[str, Marker], _GetMarkersParams, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v1/markers",
+            dict[str, Marker],
+            requires="2.6.0",
+        )
+        self.post: HttpMethod[dict[str, Marker], None, _PostMarkersBody] = HttpMethod(
+            client,
+            "POST",
+            "/api/v1/markers",
+            dict[str, Marker],
+            requires="2.6.0",
+        )

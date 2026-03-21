@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-from ..._endpoint import Endpoint
+from ..._resource import HttpMethod
 from ...models.v1 import Account
-from typing import TypedDict
+from typing import TYPE_CHECKING, TypedDict
 
-__all__ = ("get_directory",)
+if TYPE_CHECKING:
+    from ..._client import Amasto
+
+__all__ = ("DirectoryResource",)
 
 
 class _DirectoryParams(TypedDict, total=False):
@@ -14,10 +17,14 @@ class _DirectoryParams(TypedDict, total=False):
     local: bool
 
 
-get_directory: Endpoint[list[Account], _DirectoryParams, None] = Endpoint(
-    "GET",
-    "/api/v1/directory",
-    list[Account],
-    params=_DirectoryParams,
-    requires="3.0.0",
-)
+class DirectoryResource:
+    __slots__ = ("get",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.get: HttpMethod[list[Account], _DirectoryParams, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v1/directory",
+            list[Account],
+            requires="3.0.0",
+        )

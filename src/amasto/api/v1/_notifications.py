@@ -1,11 +1,14 @@
 from __future__ import annotations
 
-from ..._endpoint import Endpoint, SubscriptableEndpoint
 from ..._params import PaginationParams
+from ..._resource import HttpMethod
 from ...models.v1 import Notification, NotificationRequest
-from typing import TypedDict
+from typing import TYPE_CHECKING, TypedDict
 
-__all__ = ("get_notifications", "notifications")
+if TYPE_CHECKING:
+    from ..._client import Amasto
+
+__all__ = ("NotificationsResource",)
 
 
 class _NotificationsParams(TypedDict, total=False):
@@ -30,83 +33,174 @@ class _BulkRequestsBody(TypedDict):
     id: list[str]
 
 
-get_notifications: SubscriptableEndpoint[list[Notification], _NotificationsParams, None, Notification] = (
-    SubscriptableEndpoint(
-        "GET",
-        "/api/v1/notifications",
-        list[Notification],
-        "/api/v1/notifications/{id}",
-        Notification,
-        params=_NotificationsParams,
-    )
-)
+# ---------------------------------------------------------------------------
+# Sub-resources
+# ---------------------------------------------------------------------------
 
 
-class _NotificationRequestsById:
-    __slots__ = ("post_accept", "post_dismiss")
+class _ClearResource:
+    __slots__ = ("post",)
 
-    def __init__(self, id: str, /) -> None:
-        self.post_accept = Endpoint("POST", f"/api/v1/notifications/requests/{id}/accept", dict, requires="4.3.0")
-        self.post_dismiss = Endpoint("POST", f"/api/v1/notifications/requests/{id}/dismiss", dict, requires="4.3.0")
-
-
-class _NotificationRequestsNamespace:
-    __slots__ = ()
-
-    post_accept: Endpoint[dict, None, _BulkRequestsBody] = Endpoint(
-        "POST",
-        "/api/v1/notifications/requests/accept",
-        dict,
-        body=_BulkRequestsBody,
-        requires="4.3.0",
-    )
-    post_dismiss: Endpoint[dict, None, _BulkRequestsBody] = Endpoint(
-        "POST",
-        "/api/v1/notifications/requests/dismiss",
-        dict,
-        body=_BulkRequestsBody,
-        requires="4.3.0",
-    )
-    get_merged: Endpoint[dict, None, None] = Endpoint(
-        "GET",
-        "/api/v1/notifications/requests/merged",
-        dict,
-        requires="4.3.0",
-    )
-
-    def __getitem__(self, id: str) -> _NotificationRequestsById:
-        return _NotificationRequestsById(id)
+    def __init__(self, client: Amasto, /) -> None:
+        self.post: HttpMethod[dict, None, None] = HttpMethod(
+            client,
+            "POST",
+            "/api/v1/notifications/clear",
+            dict,
+        )
 
 
-class _NotificationsById:
-    __slots__ = ("post_dismiss",)
+class _UnreadCountResource:
+    __slots__ = ("get",)
 
-    def __init__(self, id: str, /) -> None:
-        self.post_dismiss = Endpoint("POST", f"/api/v1/notifications/{id}/dismiss", dict, requires="1.3.0")
-
-
-class _NotificationsNamespace:
-    __slots__ = ()
-
-    post_clear = Endpoint("POST", "/api/v1/notifications/clear", dict)
-    get_unread_count: Endpoint[dict, _UnreadCountParams, None] = Endpoint(
-        "GET",
-        "/api/v1/notifications/unread_count",
-        dict,
-        params=_UnreadCountParams,
-        requires="4.3.0",
-    )
-    get_requests: Endpoint[list[NotificationRequest], PaginationParams, None] = Endpoint(
-        "GET",
-        "/api/v1/notifications/requests",
-        list[NotificationRequest],
-        params=PaginationParams,
-        requires="4.3.0",
-    )
-    requests = _NotificationRequestsNamespace()
-
-    def __getitem__(self, id: str) -> _NotificationsById:
-        return _NotificationsById(id)
+    def __init__(self, client: Amasto, /) -> None:
+        self.get: HttpMethod[dict, _UnreadCountParams, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v1/notifications/unread_count",
+            dict,
+            requires="4.3.0",
+        )
 
 
-notifications = _NotificationsNamespace()
+class _RequestAcceptResource:
+    __slots__ = ("post",)
+
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.post: HttpMethod[dict, None, None] = HttpMethod(
+            client,
+            "POST",
+            f"/api/v1/notifications/requests/{id}/accept",
+            dict,
+            requires="4.3.0",
+        )
+
+
+class _RequestDismissResource:
+    __slots__ = ("post",)
+
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.post: HttpMethod[dict, None, None] = HttpMethod(
+            client,
+            "POST",
+            f"/api/v1/notifications/requests/{id}/dismiss",
+            dict,
+            requires="4.3.0",
+        )
+
+
+class _NotificationRequestByIdResource:
+    __slots__ = ("accept", "dismiss")
+
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.accept = _RequestAcceptResource(client, id)
+        self.dismiss = _RequestDismissResource(client, id)
+
+
+class _BulkAcceptResource:
+    __slots__ = ("post",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.post: HttpMethod[dict, None, _BulkRequestsBody] = HttpMethod(
+            client,
+            "POST",
+            "/api/v1/notifications/requests/accept",
+            dict,
+            requires="4.3.0",
+        )
+
+
+class _BulkDismissResource:
+    __slots__ = ("post",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.post: HttpMethod[dict, None, _BulkRequestsBody] = HttpMethod(
+            client,
+            "POST",
+            "/api/v1/notifications/requests/dismiss",
+            dict,
+            requires="4.3.0",
+        )
+
+
+class _MergedResource:
+    __slots__ = ("get",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.get: HttpMethod[dict, None, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v1/notifications/requests/merged",
+            dict,
+            requires="4.3.0",
+        )
+
+
+class _NotificationRequestsResource:
+    __slots__ = ("_client", "accept", "dismiss", "get", "merged")
+
+    def __init__(self, client: Amasto, /) -> None:
+        self._client = client
+        self.get: HttpMethod[list[NotificationRequest], PaginationParams, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v1/notifications/requests",
+            list[NotificationRequest],
+            requires="4.3.0",
+        )
+        self.accept = _BulkAcceptResource(client)
+        self.dismiss = _BulkDismissResource(client)
+        self.merged = _MergedResource(client)
+
+    def __getitem__(self, id: str) -> _NotificationRequestByIdResource:
+        return _NotificationRequestByIdResource(self._client, id)
+
+
+class _NotificationDismissResource:
+    __slots__ = ("post",)
+
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.post: HttpMethod[dict, None, None] = HttpMethod(
+            client,
+            "POST",
+            f"/api/v1/notifications/{id}/dismiss",
+            dict,
+            requires="1.3.0",
+        )
+
+
+class _NotificationByIdResource:
+    __slots__ = ("dismiss", "get")
+
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.get: HttpMethod[Notification, None, None] = HttpMethod(
+            client,
+            "GET",
+            f"/api/v1/notifications/{id}",
+            Notification,
+        )
+        self.dismiss = _NotificationDismissResource(client, id)
+
+
+# ---------------------------------------------------------------------------
+# Top-level resource
+# ---------------------------------------------------------------------------
+
+
+class NotificationsResource:
+    __slots__ = ("_client", "clear", "get", "requests", "unread_count")
+
+    def __init__(self, client: Amasto, /) -> None:
+        self._client = client
+        self.get: HttpMethod[list[Notification], _NotificationsParams, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v1/notifications",
+            list[Notification],
+        )
+        self.clear = _ClearResource(client)
+        self.unread_count = _UnreadCountResource(client)
+        self.requests = _NotificationRequestsResource(client)
+
+    def __getitem__(self, id: str) -> _NotificationByIdResource:
+        return _NotificationByIdResource(self._client, id)

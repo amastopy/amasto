@@ -1,16 +1,44 @@
 from __future__ import annotations
 
-from ..._endpoint import Endpoint
+from ..._resource import HttpMethod
 from ...models.v1 import CredentialAccount
+from typing import TYPE_CHECKING
 
-__all__ = ("profile",)
+if TYPE_CHECKING:
+    from ..._client import Amasto
 
-
-class _ProfileNamespace:
-    __slots__ = ()
-
-    delete_avatar = Endpoint("DELETE", "/api/v1/profile/avatar", CredentialAccount, requires="4.2.0")
-    delete_header = Endpoint("DELETE", "/api/v1/profile/header", CredentialAccount, requires="4.2.0")
+__all__ = ("ProfileResource",)
 
 
-profile = _ProfileNamespace()
+class _AvatarResource:
+    __slots__ = ("delete",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.delete: HttpMethod[CredentialAccount, None, None] = HttpMethod(
+            client,
+            "DELETE",
+            "/api/v1/profile/avatar",
+            CredentialAccount,
+            requires="4.2.0",
+        )
+
+
+class _HeaderResource:
+    __slots__ = ("delete",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.delete: HttpMethod[CredentialAccount, None, None] = HttpMethod(
+            client,
+            "DELETE",
+            "/api/v1/profile/header",
+            CredentialAccount,
+            requires="4.2.0",
+        )
+
+
+class ProfileResource:
+    __slots__ = ("avatar", "header")
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.avatar = _AvatarResource(client)
+        self.header = _HeaderResource(client)

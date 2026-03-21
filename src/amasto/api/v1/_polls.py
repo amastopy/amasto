@@ -1,42 +1,51 @@
 from __future__ import annotations
 
-from ..._endpoint import Endpoint, EndpointTemplate
+from ..._resource import HttpMethod
 from ...models.v1 import Poll
-from typing import TypedDict
+from typing import TYPE_CHECKING, TypedDict
 
-__all__ = ("get_polls", "polls")
+if TYPE_CHECKING:
+    from ..._client import Amasto
 
-
-get_polls: EndpointTemplate[Poll, None, None] = EndpointTemplate(
-    "GET",
-    "/api/v1/polls/{id}",
-    Poll,
-    requires="2.8.0",
-)
+__all__ = ("PollsResource",)
 
 
 class _VotesBody(TypedDict):
     choices: list[int]
 
 
-class _PollsById:
-    __slots__ = ("post_votes",)
+class _VotesResource:
+    __slots__ = ("post",)
 
-    def __init__(self, id: str, /) -> None:
-        self.post_votes: Endpoint[Poll, None, _VotesBody] = Endpoint(
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.post: HttpMethod[Poll, None, _VotesBody] = HttpMethod(
+            client,
             "POST",
             f"/api/v1/polls/{id}/votes",
             Poll,
-            body=_VotesBody,
             requires="2.8.0",
         )
 
 
-class _PollsNamespace:
-    __slots__ = ()
+class _PollByIdResource:
+    __slots__ = ("get", "votes")
 
-    def __getitem__(self, id: str) -> _PollsById:
-        return _PollsById(id)
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.get: HttpMethod[Poll, None, None] = HttpMethod(
+            client,
+            "GET",
+            f"/api/v1/polls/{id}",
+            Poll,
+            requires="2.8.0",
+        )
+        self.votes = _VotesResource(client, id)
 
 
-polls = _PollsNamespace()
+class PollsResource:
+    __slots__ = ("_client",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self._client = client
+
+    def __getitem__(self, id: str) -> _PollByIdResource:
+        return _PollByIdResource(self._client, id)

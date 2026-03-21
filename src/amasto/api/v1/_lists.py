@@ -1,11 +1,14 @@
 from __future__ import annotations
 
-from ..._endpoint import Endpoint, EndpointTemplate, SubscriptableEndpoint
 from ..._params import PaginationParams
+from ..._resource import HttpMethod
 from ...models.v1 import Account, List
-from typing import TypedDict
+from typing import TYPE_CHECKING, TypedDict
 
-__all__ = ("delete_lists", "get_lists", "lists", "post_lists", "put_lists")
+if TYPE_CHECKING:
+    from ..._client import Amasto
+
+__all__ = ("ListsResource",)
 
 
 class _CreateListBody(TypedDict, total=False):
@@ -24,72 +27,80 @@ class _ListAccountsBody(TypedDict):
     account_ids: list[str]
 
 
-get_lists: SubscriptableEndpoint[list[List], None, None, List] = SubscriptableEndpoint(
-    "GET",
-    "/api/v1/lists",
-    list[List],
-    "/api/v1/lists/{id}",
-    List,
-    requires="2.1.0",
-    item_requires="2.1.0",
-)
+class _ListAccountsResource:
+    __slots__ = ("delete", "get", "post")
 
-post_lists: Endpoint[List, None, _CreateListBody] = Endpoint(
-    "POST",
-    "/api/v1/lists",
-    List,
-    body=_CreateListBody,
-    requires="2.1.0",
-)
-
-put_lists: EndpointTemplate[List, None, _UpdateListBody] = EndpointTemplate(
-    "PUT",
-    "/api/v1/lists/{id}",
-    List,
-    body=_UpdateListBody,
-    requires="2.1.0",
-)
-
-delete_lists: EndpointTemplate[dict, None, None] = EndpointTemplate(
-    "DELETE",
-    "/api/v1/lists/{id}",
-    dict,
-    requires="2.1.0",
-)
-
-
-class _ListsById:
-    __slots__ = ("delete_accounts", "get_accounts", "post_accounts")
-
-    def __init__(self, id: str, /) -> None:
-        self.get_accounts: Endpoint[list[Account], PaginationParams, None] = Endpoint(
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.get: HttpMethod[list[Account], PaginationParams, None] = HttpMethod(
+            client,
             "GET",
             f"/api/v1/lists/{id}/accounts",
             list[Account],
-            params=PaginationParams,
             requires="2.1.0",
         )
-        self.post_accounts: Endpoint[dict, None, _ListAccountsBody] = Endpoint(
+        self.post: HttpMethod[dict, None, _ListAccountsBody] = HttpMethod(
+            client,
             "POST",
             f"/api/v1/lists/{id}/accounts",
             dict,
-            body=_ListAccountsBody,
             requires="2.1.0",
         )
-        self.delete_accounts: Endpoint[dict, None, _ListAccountsBody] = Endpoint(
+        self.delete: HttpMethod[dict, None, _ListAccountsBody] = HttpMethod(
+            client,
             "DELETE",
             f"/api/v1/lists/{id}/accounts",
             dict,
-            body=_ListAccountsBody,
             requires="2.1.0",
         )
 
 
-class _ListsNamespace:
-    __slots__ = ()
+class _ListByIdResource:
+    __slots__ = ("accounts", "delete", "get", "put")
 
-    def __getitem__(self, id: str) -> _ListsById:
-        return _ListsById(id)
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.get: HttpMethod[List, None, None] = HttpMethod(
+            client,
+            "GET",
+            f"/api/v1/lists/{id}",
+            List,
+            requires="2.1.0",
+        )
+        self.put: HttpMethod[List, None, _UpdateListBody] = HttpMethod(
+            client,
+            "PUT",
+            f"/api/v1/lists/{id}",
+            List,
+            requires="2.1.0",
+        )
+        self.delete: HttpMethod[dict, None, None] = HttpMethod(
+            client,
+            "DELETE",
+            f"/api/v1/lists/{id}",
+            dict,
+            requires="2.1.0",
+        )
+        self.accounts = _ListAccountsResource(client, id)
 
 
-lists = _ListsNamespace()
+class ListsResource:
+    __slots__ = ("_client", "get", "post")
+
+    def __init__(self, client: Amasto, /) -> None:
+        self._client = client
+        self.get: HttpMethod[list[List], None, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v1/lists",
+            list[List],
+            requires="2.1.0",
+        )
+        self.post: HttpMethod[List, None, _CreateListBody] = HttpMethod(
+            client,
+            "POST",
+            "/api/v1/lists",
+            List,
+            requires="2.1.0",
+        )
+
+    def __getitem__(self, id: str) -> _ListByIdResource:
+        return _ListByIdResource(self._client, id)

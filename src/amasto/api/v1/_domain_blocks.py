@@ -1,33 +1,38 @@
 from __future__ import annotations
 
-from ..._endpoint import Endpoint
 from ..._params import PaginationParams
-from typing import TypedDict
+from ..._resource import HttpMethod
+from typing import TYPE_CHECKING, TypedDict
 
-__all__ = ("delete_domain_blocks", "get_domain_blocks", "post_domain_blocks")
+if TYPE_CHECKING:
+    from ..._client import Amasto
+
+__all__ = ("DomainBlocksResource",)
 
 
 class _DomainBlockBody(TypedDict):
     domain: str
 
 
-get_domain_blocks: Endpoint[list[str], PaginationParams, None] = Endpoint(
-    "GET",
-    "/api/v1/domain_blocks",
-    list[str],
-    params=PaginationParams,
-)
+class DomainBlocksResource:
+    __slots__ = ("delete", "get", "post")
 
-post_domain_blocks: Endpoint[dict, None, _DomainBlockBody] = Endpoint(
-    "POST",
-    "/api/v1/domain_blocks",
-    dict,
-    body=_DomainBlockBody,
-)
-
-delete_domain_blocks: Endpoint[dict, None, _DomainBlockBody] = Endpoint(
-    "DELETE",
-    "/api/v1/domain_blocks",
-    dict,
-    body=_DomainBlockBody,
-)
+    def __init__(self, client: Amasto, /) -> None:
+        self.get: HttpMethod[list[str], PaginationParams, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v1/domain_blocks",
+            list[str],
+        )
+        self.post: HttpMethod[dict, None, _DomainBlockBody] = HttpMethod(
+            client,
+            "POST",
+            "/api/v1/domain_blocks",
+            dict,
+        )
+        self.delete: HttpMethod[dict, None, _DomainBlockBody] = HttpMethod(
+            client,
+            "DELETE",
+            "/api/v1/domain_blocks",
+            dict,
+        )

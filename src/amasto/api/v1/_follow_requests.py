@@ -1,41 +1,59 @@
 from __future__ import annotations
 
-from ..._endpoint import Endpoint
 from ..._params import PaginationParams
+from ..._resource import HttpMethod
 from ...models.v1 import Account, Relationship
+from typing import TYPE_CHECKING
 
-__all__ = ("follow_requests", "get_follow_requests")
+if TYPE_CHECKING:
+    from ..._client import Amasto
 
-
-get_follow_requests: Endpoint[list[Account], PaginationParams, None] = Endpoint(
-    "GET",
-    "/api/v1/follow_requests",
-    list[Account],
-    params=PaginationParams,
-)
+__all__ = ("FollowRequestsResource",)
 
 
-class _FollowRequestsById:
-    __slots__ = ("post_authorize", "post_reject")
+class _AuthorizeResource:
+    __slots__ = ("post",)
 
-    def __init__(self, account_id: str, /) -> None:
-        self.post_authorize = Endpoint(
+    def __init__(self, client: Amasto, account_id: str, /) -> None:
+        self.post: HttpMethod[Relationship, None, None] = HttpMethod(
+            client,
             "POST",
             f"/api/v1/follow_requests/{account_id}/authorize",
             Relationship,
         )
-        self.post_reject = Endpoint(
+
+
+class _RejectResource:
+    __slots__ = ("post",)
+
+    def __init__(self, client: Amasto, account_id: str, /) -> None:
+        self.post: HttpMethod[Relationship, None, None] = HttpMethod(
+            client,
             "POST",
             f"/api/v1/follow_requests/{account_id}/reject",
             Relationship,
         )
 
 
-class _FollowRequestsNamespace:
-    __slots__ = ()
+class _FollowRequestByIdResource:
+    __slots__ = ("authorize", "reject")
 
-    def __getitem__(self, account_id: str) -> _FollowRequestsById:
-        return _FollowRequestsById(account_id)
+    def __init__(self, client: Amasto, account_id: str, /) -> None:
+        self.authorize = _AuthorizeResource(client, account_id)
+        self.reject = _RejectResource(client, account_id)
 
 
-follow_requests = _FollowRequestsNamespace()
+class FollowRequestsResource:
+    __slots__ = ("_client", "get")
+
+    def __init__(self, client: Amasto, /) -> None:
+        self._client = client
+        self.get: HttpMethod[list[Account], PaginationParams, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v1/follow_requests",
+            list[Account],
+        )
+
+    def __getitem__(self, account_id: str) -> _FollowRequestByIdResource:
+        return _FollowRequestByIdResource(self._client, account_id)

@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-from .._endpoint import Endpoint
+from .._resource import HttpMethod
 from ..models.v1 import Token
-from typing import TypedDict
+from typing import TYPE_CHECKING, TypedDict
 
-__all__ = ("post_token",)
+if TYPE_CHECKING:
+    from .._client import Amasto
+
+__all__ = ("TokenResource",)
 
 
 class _TokenBody(TypedDict, total=False):
@@ -17,9 +20,13 @@ class _TokenBody(TypedDict, total=False):
     scope: str
 
 
-post_token: Endpoint[Token, None, _TokenBody] = Endpoint(
-    "POST",
-    "/oauth/token",
-    Token,
-    body=_TokenBody,
-)
+class TokenResource:
+    __slots__ = ("post",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.post: HttpMethod[Token, None, _TokenBody] = HttpMethod(
+            client,
+            "POST",
+            "/oauth/token",
+            Token,
+        )

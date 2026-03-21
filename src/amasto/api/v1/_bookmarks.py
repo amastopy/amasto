@@ -1,15 +1,24 @@
 from __future__ import annotations
 
-from ..._endpoint import Endpoint
 from ..._params import PaginationParams
+from ..._resource import HttpMethod
 from ...models.v1 import Status
+from typing import TYPE_CHECKING
 
-__all__ = ("get_bookmarks",)
+if TYPE_CHECKING:
+    from ..._client import Amasto
 
-get_bookmarks: Endpoint[list[Status], PaginationParams, None] = Endpoint(
-    "GET",
-    "/api/v1/bookmarks",
-    list[Status],
-    params=PaginationParams,
-    requires="3.1.0",
-)
+__all__ = ("BookmarksResource",)
+
+
+class BookmarksResource:
+    __slots__ = ("get",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.get: HttpMethod[list[Status], PaginationParams, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v1/bookmarks",
+            list[Status],
+            requires="3.1.0",
+        )

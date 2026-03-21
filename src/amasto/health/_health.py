@@ -1,7 +1,22 @@
 from __future__ import annotations
 
-from .._endpoint import Endpoint
+from .._resource import HttpMethod
+from typing import TYPE_CHECKING
 
-__all__ = ("get_health",)
+if TYPE_CHECKING:
+    from .._client import Amasto
 
-get_health: Endpoint[dict, None, None] = Endpoint("GET", "/health", dict, requires="2.5.0")
+__all__ = ("HealthResource",)
+
+
+class HealthResource:
+    __slots__ = ("get",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.get: HttpMethod[dict, None, None] = HttpMethod(
+            client,
+            "GET",
+            "/health",
+            dict,
+            requires="2.5.0",
+        )

@@ -1,9 +1,12 @@
 from __future__ import annotations
 
-from .._endpoint import Endpoint
-from typing import TypedDict
+from .._resource import HttpMethod
+from typing import TYPE_CHECKING, TypedDict
 
-__all__ = ("get_authorize",)
+if TYPE_CHECKING:
+    from .._client import Amasto
+
+__all__ = ("AuthorizeResource",)
 
 
 class _AuthorizeParams(TypedDict, total=False):
@@ -18,9 +21,13 @@ class _AuthorizeParams(TypedDict, total=False):
     lang: str
 
 
-get_authorize: Endpoint[dict, _AuthorizeParams, None] = Endpoint(
-    "GET",
-    "/oauth/authorize",
-    dict,
-    params=_AuthorizeParams,
-)
+class AuthorizeResource:
+    __slots__ = ("get",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.get: HttpMethod[dict, _AuthorizeParams, None] = HttpMethod(
+            client,
+            "GET",
+            "/oauth/authorize",
+            dict,
+        )

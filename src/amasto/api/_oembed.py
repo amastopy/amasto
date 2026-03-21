@@ -1,9 +1,12 @@
 from __future__ import annotations
 
-from .._endpoint import Endpoint
-from typing import TypedDict
+from .._resource import HttpMethod
+from typing import TYPE_CHECKING, TypedDict
 
-__all__ = ("get_oembed",)
+if TYPE_CHECKING:
+    from .._client import Amasto
+
+__all__ = ("OEmbedResource",)
 
 
 class _OEmbedParams(TypedDict, total=False):
@@ -12,10 +15,14 @@ class _OEmbedParams(TypedDict, total=False):
     maxheight: int
 
 
-get_oembed: Endpoint[dict, _OEmbedParams, None] = Endpoint(
-    "GET",
-    "/api/oembed",
-    dict,
-    params=_OEmbedParams,
-    requires="1.0.0",
-)
+class OEmbedResource:
+    __slots__ = ("get",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.get: HttpMethod[dict, _OEmbedParams, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/oembed",
+            dict,
+            requires="1.0.0",
+        )

@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-from ..._endpoint import Endpoint
+from ..._resource import HttpMethod
 from ...models.v1 import Search
-from typing import TypedDict
+from typing import TYPE_CHECKING, TypedDict
 
-__all__ = ("get_search",)
+if TYPE_CHECKING:
+    from ..._client import Amasto
+
+__all__ = ("SearchResource",)
 
 
 class _SearchParams(TypedDict, total=False):
@@ -20,10 +23,14 @@ class _SearchParams(TypedDict, total=False):
     offset: int
 
 
-get_search: Endpoint[Search, _SearchParams, None] = Endpoint(
-    "GET",
-    "/api/v2/search",
-    Search,
-    params=_SearchParams,
-    requires="2.4.1",
-)
+class SearchResource:
+    __slots__ = ("get",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.get: HttpMethod[Search, _SearchParams, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v2/search",
+            Search,
+            requires="2.4.1",
+        )

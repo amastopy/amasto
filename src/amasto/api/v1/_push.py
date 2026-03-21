@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-from ..._endpoint import Endpoint
+from ..._resource import HttpMethod
 from ...models.v1 import WebPushSubscription
-from typing import TypedDict
+from typing import TYPE_CHECKING, TypedDict
 
-__all__ = ("push",)
+if TYPE_CHECKING:
+    from ..._client import Amasto
+
+__all__ = ("PushResource",)
 
 
 class _PushSubscriptionKeys(TypedDict, total=False):
@@ -44,25 +47,42 @@ class _UpdatePushBody(TypedDict, total=False):
     data: _PushData
 
 
-class _PushNamespace:
-    __slots__ = ()
+class _SubscriptionResource:
+    __slots__ = ("delete", "get", "post", "put")
 
-    post_subscription: Endpoint[WebPushSubscription, None, _CreatePushBody] = Endpoint(
-        "POST",
-        "/api/v1/push/subscription",
-        WebPushSubscription,
-        body=_CreatePushBody,
-        requires="2.4.0",
-    )
-    get_subscription = Endpoint("GET", "/api/v1/push/subscription", WebPushSubscription, requires="2.4.0")
-    put_subscription: Endpoint[WebPushSubscription, None, _UpdatePushBody] = Endpoint(
-        "PUT",
-        "/api/v1/push/subscription",
-        WebPushSubscription,
-        body=_UpdatePushBody,
-        requires="2.4.0",
-    )
-    delete_subscription = Endpoint("DELETE", "/api/v1/push/subscription", dict, requires="2.4.0")
+    def __init__(self, client: Amasto, /) -> None:
+        self.get: HttpMethod[WebPushSubscription, None, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v1/push/subscription",
+            WebPushSubscription,
+            requires="2.4.0",
+        )
+        self.post: HttpMethod[WebPushSubscription, None, _CreatePushBody] = HttpMethod(
+            client,
+            "POST",
+            "/api/v1/push/subscription",
+            WebPushSubscription,
+            requires="2.4.0",
+        )
+        self.put: HttpMethod[WebPushSubscription, None, _UpdatePushBody] = HttpMethod(
+            client,
+            "PUT",
+            "/api/v1/push/subscription",
+            WebPushSubscription,
+            requires="2.4.0",
+        )
+        self.delete: HttpMethod[dict, None, None] = HttpMethod(
+            client,
+            "DELETE",
+            "/api/v1/push/subscription",
+            dict,
+            requires="2.4.0",
+        )
 
 
-push = _PushNamespace()
+class PushResource:
+    __slots__ = ("subscription",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.subscription = _SubscriptionResource(client)

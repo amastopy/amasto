@@ -1,5 +1,5 @@
 from __future__ import annotations
 
-from ._health import get_health
+from ._health import HealthResource
 
-__all__ = ("get_health",)
+__all__ = ("HealthResource",)

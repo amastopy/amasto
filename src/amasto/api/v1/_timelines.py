@@ -1,11 +1,14 @@
 from __future__ import annotations
 
-from ..._endpoint import Endpoint, EndpointTemplate
 from ..._params import PaginationParams
+from ..._resource import HttpMethod
 from ...models.v1 import Status
-from typing import TypedDict
+from typing import TYPE_CHECKING, TypedDict
 
-__all__ = ("timelines",)
+if TYPE_CHECKING:
+    from ..._client import Amasto
+
+__all__ = ("TimelinesResource",)
 
 
 class _PublicTimelineParams(TypedDict, total=False):
@@ -39,47 +42,107 @@ class _LinkTimelineParams(TypedDict, total=False):
     limit: int
 
 
-class _TimelinesNamespace:
-    __slots__ = ()
+class _PublicResource:
+    __slots__ = ("get",)
 
-    get_public: Endpoint[list[Status], _PublicTimelineParams, None] = Endpoint(
-        "GET",
-        "/api/v1/timelines/public",
-        list[Status],
-        params=_PublicTimelineParams,
-    )
-    get_home: Endpoint[list[Status], PaginationParams, None] = Endpoint(
-        "GET",
-        "/api/v1/timelines/home",
-        list[Status],
-        params=PaginationParams,
-    )
-    get_link: Endpoint[list[Status], _LinkTimelineParams, None] = Endpoint(
-        "GET",
-        "/api/v1/timelines/link",
-        list[Status],
-        params=_LinkTimelineParams,
-        requires="4.3.0",
-    )
-    get_direct: Endpoint[list[Status], PaginationParams, None] = Endpoint(
-        "GET",
-        "/api/v1/timelines/direct",
-        list[Status],
-        params=PaginationParams,
-    )
-    get_tag: EndpointTemplate[list[Status], _TagTimelineParams, None] = EndpointTemplate(
-        "GET",
-        "/api/v1/timelines/tag/{hashtag}",
-        list[Status],
-        params=_TagTimelineParams,
-    )
-    get_list: EndpointTemplate[list[Status], PaginationParams, None] = EndpointTemplate(
-        "GET",
-        "/api/v1/timelines/list/{list_id}",
-        list[Status],
-        params=PaginationParams,
-        requires="2.1.0",
-    )
+    def __init__(self, client: Amasto, /) -> None:
+        self.get: HttpMethod[list[Status], _PublicTimelineParams, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v1/timelines/public",
+            list[Status],
+        )
 
 
-timelines = _TimelinesNamespace()
+class _HomeResource:
+    __slots__ = ("get",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.get: HttpMethod[list[Status], PaginationParams, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v1/timelines/home",
+            list[Status],
+        )
+
+
+class _LinkResource:
+    __slots__ = ("get",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.get: HttpMethod[list[Status], _LinkTimelineParams, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v1/timelines/link",
+            list[Status],
+            requires="4.3.0",
+        )
+
+
+class _DirectResource:
+    __slots__ = ("get",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.get: HttpMethod[list[Status], PaginationParams, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v1/timelines/direct",
+            list[Status],
+        )
+
+
+class _TagByHashtagResource:
+    __slots__ = ("get",)
+
+    def __init__(self, client: Amasto, hashtag: str, /) -> None:
+        self.get: HttpMethod[list[Status], _TagTimelineParams, None] = HttpMethod(
+            client,
+            "GET",
+            f"/api/v1/timelines/tag/{hashtag}",
+            list[Status],
+        )
+
+
+class _TimelineTagNamespace:
+    __slots__ = ("_client",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self._client = client
+
+    def __getitem__(self, hashtag: str) -> _TagByHashtagResource:
+        return _TagByHashtagResource(self._client, hashtag)
+
+
+class _ListByIdResource:
+    __slots__ = ("get",)
+
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.get: HttpMethod[list[Status], PaginationParams, None] = HttpMethod(
+            client,
+            "GET",
+            f"/api/v1/timelines/list/{id}",
+            list[Status],
+            requires="2.1.0",
+        )
+
+
+class _TimelineListNamespace:
+    __slots__ = ("_client",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self._client = client
+
+    def __getitem__(self, id: str) -> _ListByIdResource:
+        return _ListByIdResource(self._client, id)
+
+
+class TimelinesResource:
+    __slots__ = ("direct", "home", "link", "list", "public", "tag")
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.public = _PublicResource(client)
+        self.home = _HomeResource(client)
+        self.link = _LinkResource(client)
+        self.direct = _DirectResource(client)
+        self.tag = _TimelineTagNamespace(client)
+        self.list = _TimelineListNamespace(client)

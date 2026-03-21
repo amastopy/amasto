@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-from ._endpoint import Endpoint
 from ._nodeinfo import NodeInfo
 from asyncio import Event, Task
 import httpx
 from semver import Version
-from typing import Any, overload
 
 
 class Amasto:
@@ -15,6 +13,9 @@ class Amasto:
         "_http",
         "_initialization_event",
         "_mastodon_version",
+        "api",
+        "health",
+        "oauth",
     )
 
     _base_url: str
@@ -31,6 +32,10 @@ class Amasto:
         *,
         mastodon_version: Version | None = None,
     ) -> None:
+        from .api import ApiNamespace
+        from .health import HealthResource
+        from .oauth import OAuthNamespace
+
         self._base_url = base_url
         self._api_key = api_key
         self._mastodon_version = None
@@ -39,6 +44,11 @@ class Amasto:
             headers={"Authorization": f"Bearer {api_key}"},
         )
         self._initialization_event = Event()
+
+        self.api = ApiNamespace(self)
+        self.oauth = OAuthNamespace(self)
+        self.health = HealthResource(self)
+
         if mastodon_version is not None:
             self._mastodon_version = mastodon_version
             self._initialization_event.set()
@@ -55,68 +65,3 @@ class Amasto:
         if nodeinfo.software.name == "mastodon":
             self._mastodon_version = Version.parse(nodeinfo.software.version)
         self._initialization_event.set()
-
-    # ------------------------------------------------------------------
-    # fetch
-    # ------------------------------------------------------------------
-
-    @overload
-    async def fetch[T, P, B](
-        self,
-        endpoint: Endpoint[T, P, B],
-        /,
-        *,
-        params: P | None = None,
-        body: B | None = None,
-        raw: dict[str, Any] | None = None,
-    ) -> T: ...
-
-    @overload
-    async def fetch(
-        self,
-        method: str,
-        path: str,
-        /,
-        *,
-        params: dict[str, Any] | None = None,
-        body: dict[str, Any] | None = None,
-        raw: dict[str, Any] | None = None,
-    ) -> Any: ...  # noqa: ANN401
-
-    async def fetch[T, P, B](
-        self,
-        endpoint_or_method: Endpoint[T, P, B] | str,
-        path: str | None = None,
-        /,
-        *,
-        params: P | dict[str, Any] | None = None,
-        body: B | dict[str, Any] | None = None,
-        raw: dict[str, Any] | None = None,
-    ) -> T | Any:
-        await self._initialization_event.wait()
-
-        if isinstance(endpoint_or_method, Endpoint):
-            method = endpoint_or_method.method
-            request_path = endpoint_or_method.path
-        else:
-            if path is None:
-                raise TypeError("path is required when the first argument is a method string")
-            method = endpoint_or_method
-            request_path = path
-
-        response = await self._http.request(
-            method,
-            request_path,
-            params=params,  # type: ignore[arg-type]
-            json=body,
-        )
-        response.raise_for_status()
-
-        data: Any = response.json()
-
-        if raw is not None and isinstance(data, dict):
-            raw.update(data)
-
-        if isinstance(endpoint_or_method, Endpoint):
-            return endpoint_or_method.parse(data)
-        return data

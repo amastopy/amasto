@@ -32,19 +32,18 @@ uv add amasto
 
 ```python
 from amasto import Amasto
-from amasto.api.v1 import statuses, get_statuses
 
 async def main() -> None:
     client = Amasto("https://mastodon.social", "YOUR_ACCESS_TOKEN")
 
     # Post a status
-    status = await client.fetch(
-        statuses.post_statuses,
-        body={"status": "Hello from amasto!"},
-    )
+    status = await client.api.v1.statuses.post(body={"status": "Hello from amasto!"})
 
     # Read a single status by ID
-    status = await client.fetch(get_statuses["123456"])
+    status = await client.api.v1.statuses["123456"].get()
+
+    # List accounts the user is following
+    accounts = await client.api.v1.accounts["123456"].following.get()
 ```
 
 ## Client
@@ -61,97 +60,89 @@ client = Amasto(
 )
 ```
 
-### `fetch()`
+## Resources
 
-The `fetch` method has two overloads:
+API access uses a resource-based pattern where every endpoint is reachable as a chain of attribute accesses on the client:
 
-| Form | Return type | Description |
-|---|---|---|
-| `fetch(endpoint, *, params, body)` | `T` (typed) | Type-safe call using an `Endpoint` descriptor |
-| `fetch(method, path, *, params, body)` | `Any` | Raw HTTP call with manual method/path |
+```
+client.api.v1.<resource>.<method>(params=..., body=...)
+client.api.v1.<resource>["id"].<sub_resource>.<method>(...)
+```
 
-## Endpoints
+Each leaf node is an `HttpMethod` instance that is:
+- **Async-callable** — `await method(params=..., body=...)` executes the HTTP request and returns a validated response.
+- **Introspectable** — `.method`, `.path`, and `.requires` expose the HTTP verb, URL path, and minimum server version.
+- **Test-friendly** — `.parse(data)` validates data against the response type without making HTTP calls.
 
-Endpoint descriptors live under `amasto.api` and combine the HTTP method, path, and response type into a single object so that `fetch()` can return fully typed results.
+### API v1 (`client.api.v1`)
 
-There are three descriptor types:
-
-| Type | Description |
+| Resource | Access pattern |
 |---|---|
-| `Endpoint[T, P, B]` | Fixed-path endpoint |
-| `EndpointTemplate[T, P, B]` | Path with a `{param}` placeholder — use `endpoint[key]` to resolve |
-| `SubscriptableEndpoint` | Collection + item — flat access for lists, `endpoint[id]` for a single item |
+| `accounts` | `.get`, `.post`, `.verify_credentials.get`, `["id"].get`, `["id"].follow.post`, … |
+| `announcements` | `.get`, `["id"].dismiss.post`, `["id"].reactions["name"].put` |
+| `apps` | `.post`, `.verify_credentials.get` |
+| `blocks` | `.get` |
+| `bookmarks` | `.get` |
+| `conversations` | `.get`, `["id"].delete`, `["id"].read.post` |
+| `custom_emojis` | `.get` |
+| `directory` | `.get` |
+| `domain_blocks` | `.get`, `.post`, `.delete` |
+| `emails` | `.confirmations.post` |
+| `endorsements` | `.get` |
+| `favourites` | `.get` |
+| `featured_tags` | `.get`, `.post`, `.suggestions.get`, `["id"].delete` |
+| `follow_requests` | `.get`, `["id"].authorize.post`, `["id"].reject.post` |
+| `followed_tags` | `.get` |
+| `instance` | `.get`, `.peers.get`, `.activity.get`, `.rules.get`, `.domain_blocks.get`, … |
+| `lists` | `.get`, `.post`, `["id"].get`, `["id"].put`, `["id"].delete`, `["id"].accounts.get` |
+| `markers` | `.get`, `.post` |
+| `media` | `["id"].get`, `["id"].put`, `["id"].delete` |
+| `mutes` | `.get` |
+| `notifications` | `.get`, `.clear.post`, `.unread_count.get`, `.requests.*`, `["id"].get`, `["id"].dismiss.post` |
+| `polls` | `["id"].get`, `["id"].votes.post` |
+| `preferences` | `.get` |
+| `profile` | `.avatar.delete`, `.header.delete` |
+| `push` | `.subscription.get`, `.subscription.post`, `.subscription.put`, `.subscription.delete` |
+| `reports` | `.post` |
+| `scheduled_statuses` | `.get`, `["id"].get`, `["id"].put`, `["id"].delete` |
+| `search` | `.get` |
+| `statuses` | `.get`, `.post`, `["id"].get`, `["id"].put`, `["id"].delete`, `["id"].context.get`, `["id"].favourite.post`, … |
+| `suggestions` | `.get`, `["id"].delete` |
+| `tags` | `["key"].get`, `["key"].follow.post`, `["key"].unfollow.post` |
+| `timelines` | `.public.get`, `.home.get`, `.link.get`, `.direct.get`, `.tag["hashtag"].get`, `.list["id"].get` |
+| `trends` | `.tags.get`, `.statuses.get`, `.links.get` |
 
-### API v1 (`amasto.api.v1`)
+### API v2 (`client.api.v2`)
 
-| Module | Endpoints |
+| Resource | Access pattern |
 |---|---|
-| `accounts` | `get_accounts`, `post_accounts`, `accounts[id].*` |
-| `announcements` | `get_announcements`, `announcements[id].*` |
-| `apps` | `post_apps`, `apps[client_id].*` |
-| `blocks` | `get_blocks` |
-| `bookmarks` | `get_bookmarks` |
-| `conversations` | `get_conversations`, `delete_conversations[id]`, `conversations[id].*` |
-| `custom_emojis` | `get_custom_emojis` |
-| `directory` | `get_directory` |
-| `domain_blocks` | `get_domain_blocks`, `post_domain_blocks`, `delete_domain_blocks` |
-| `emails` | `emails.*` |
-| `endorsements` | `get_endorsements` |
-| `favourites` | `get_favourites` |
-| `featured_tags` | `get_featured_tags`, `post_featured_tags`, `delete_featured_tags[id]`, `featured_tags[id].*` |
-| `follow_requests` | `get_follow_requests`, `follow_requests[id].*` |
-| `followed_tags` | `get_followed_tags` |
-| `instance` | `get_instance`, `instance.*` |
-| `lists` | `get_lists`, `post_lists`, `put_lists[id]`, `delete_lists[id]`, `lists[id].*` |
-| `markers` | `get_markers`, `post_markers` |
-| `media` | `get_media[id]`, `put_media[id]`, `delete_media[id]` |
-| `mutes` | `get_mutes` |
-| `notifications` | `get_notifications`, `notifications[id].*` |
-| `polls` | `get_polls[id]`, `polls[id].*` |
-| `preferences` | `get_preferences` |
-| `profile` | `profile.*` |
-| `push` | `push.*` |
-| `reports` | `post_reports` |
-| `scheduled_statuses` | `get_scheduled_statuses`, `put_scheduled_statuses[id]`, `delete_scheduled_statuses[id]` |
-| `search` | `get_search` |
-| `statuses` | `get_statuses`, `post_statuses`, `put_statuses[id]`, `delete_statuses[id]`, `statuses[id].*` |
-| `suggestions` | `get_suggestions`, `delete_suggestions[id]` |
-| `tags` | `get_tags[name]`, `tags[name].*` |
-| `timelines` | `timelines.*` |
-| `trends` | `trends.*` |
+| `filters` | `.get`, `.post`, `["id"].get/put/delete`, `["id"].keywords.get/post`, `.keywords["id"].get/put/delete` |
+| `instance` | `.get` |
+| `media` | `.post` |
+| `notifications` | `.get`, `.unread_count.get`, `.policy.get/patch`, `["group_key"].dismiss.post`, `["group_key"].accounts.get` |
+| `search` | `.get` |
+| `suggestions` | `.get` |
 
-### API v2 (`amasto.api.v2`)
+### OEmbed (`client.api.oembed`)
 
-| Module | Endpoints |
+| Access | Description |
 |---|---|
-| `filters` | `get_filters`, `post_filters`, `put_filters[id]`, `delete_filters[id]`, `filters[id].*` |
-| `instance` | `get_instance` |
-| `media` | `post_media` |
-| `notification_policy` | `notification_policy.*` |
-| `notifications` | `get_notifications`, `notifications[id].*` |
-| `search` | `get_search` |
-| `suggestions` | `get_suggestions` |
+| `.get` | Fetch oEmbed data for a status URL |
 
-### OEmbed (`amasto.api`)
+### OAuth (`client.oauth`)
 
-| Endpoint |
-|---|
-| `get_oembed` |
-
-### OAuth (`amasto.oauth`)
-
-| Endpoint | Description |
+| Resource | Access |
 |---|---|
-| `post_token` | Obtain a token (authorization code / client credentials) |
-| `get_authorize` | Authorization URL |
-| `get_userinfo` | Authenticated user info |
-| `post_revoke` | Revoke a token |
+| `authorize` | `.get` — Authorization URL |
+| `token` | `.post` — Obtain a token |
+| `revoke` | `.post` — Revoke a token |
+| `userinfo` | `.get` — Authenticated user info |
 
-### Health (`amasto.health`)
+### Health (`client.health`)
 
-| Endpoint | Description |
+| Access | Description |
 |---|---|
-| `get_health` | Server health check |
+| `.get` | Server health check |
 
 ## Models
 

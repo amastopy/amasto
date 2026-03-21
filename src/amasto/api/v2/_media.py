@@ -1,8 +1,23 @@
 from __future__ import annotations
 
-from ..._endpoint import Endpoint
+from ..._resource import HttpMethod
 from ...models.v1 import MediaAttachment
+from typing import TYPE_CHECKING
 
-__all__ = ("post_media",)
+if TYPE_CHECKING:
+    from ..._client import Amasto
 
-post_media = Endpoint("POST", "/api/v2/media", MediaAttachment, requires="3.2.0")
+__all__ = ("MediaResource",)
+
+
+class MediaResource:
+    __slots__ = ("post",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.post: HttpMethod[MediaAttachment, None, None] = HttpMethod(
+            client,
+            "POST",
+            "/api/v2/media",
+            MediaAttachment,
+            requires="3.2.0",
+        )

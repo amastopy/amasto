@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-from ..._endpoint import Endpoint
+from ..._resource import HttpMethod
 from ...models.v1 import Report
-from typing import TypedDict
+from typing import TYPE_CHECKING, TypedDict
 
-__all__ = ("post_reports",)
+if TYPE_CHECKING:
+    from ..._client import Amasto
+
+__all__ = ("ReportsResource",)
 
 
 class _ReportBody(TypedDict, total=False):
@@ -16,10 +19,14 @@ class _ReportBody(TypedDict, total=False):
     rule_ids: list[str]
 
 
-post_reports: Endpoint[Report, None, _ReportBody] = Endpoint(
-    "POST",
-    "/api/v1/reports",
-    Report,
-    body=_ReportBody,
-    requires="1.1.0",
-)
+class ReportsResource:
+    __slots__ = ("post",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.post: HttpMethod[Report, None, _ReportBody] = HttpMethod(
+            client,
+            "POST",
+            "/api/v1/reports",
+            Report,
+            requires="1.1.0",
+        )

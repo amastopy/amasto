@@ -1,40 +1,55 @@
 from __future__ import annotations
 
-from ..._endpoint import Endpoint, EndpointTemplate
 from ..._params import PaginationParams
+from ..._resource import HttpMethod
 from ...models.v1 import Conversation
+from typing import TYPE_CHECKING
 
-__all__ = ("conversations", "delete_conversations", "get_conversations")
+if TYPE_CHECKING:
+    from ..._client import Amasto
 
-
-get_conversations: Endpoint[list[Conversation], PaginationParams, None] = Endpoint(
-    "GET",
-    "/api/v1/conversations",
-    list[Conversation],
-    params=PaginationParams,
-    requires="2.6.0",
-)
-
-delete_conversations: EndpointTemplate[dict, None, None] = EndpointTemplate(
-    "DELETE",
-    "/api/v1/conversations/{id}",
-    dict,
-    requires="2.6.0",
-)
+__all__ = ("ConversationsResource",)
 
 
-class _ConversationsById:
-    __slots__ = ("post_read",)
+class _ReadResource:
+    __slots__ = ("post",)
 
-    def __init__(self, id: str, /) -> None:
-        self.post_read = Endpoint("POST", f"/api/v1/conversations/{id}/read", Conversation, requires="2.6.0")
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.post: HttpMethod[Conversation, None, None] = HttpMethod(
+            client,
+            "POST",
+            f"/api/v1/conversations/{id}/read",
+            Conversation,
+            requires="2.6.0",
+        )
 
 
-class _ConversationsNamespace:
-    __slots__ = ()
+class _ConversationByIdResource:
+    __slots__ = ("delete", "read")
 
-    def __getitem__(self, id: str) -> _ConversationsById:
-        return _ConversationsById(id)
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.delete: HttpMethod[dict, None, None] = HttpMethod(
+            client,
+            "DELETE",
+            f"/api/v1/conversations/{id}",
+            dict,
+            requires="2.6.0",
+        )
+        self.read = _ReadResource(client, id)
 
 
-conversations = _ConversationsNamespace()
+class ConversationsResource:
+    __slots__ = ("_client", "get")
+
+    def __init__(self, client: Amasto, /) -> None:
+        self._client = client
+        self.get: HttpMethod[list[Conversation], PaginationParams, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v1/conversations",
+            list[Conversation],
+            requires="2.6.0",
+        )
+
+    def __getitem__(self, id: str) -> _ConversationByIdResource:
+        return _ConversationByIdResource(self._client, id)

@@ -1,8 +1,23 @@
 from __future__ import annotations
 
-from ._authorize import get_authorize
-from ._revoke import post_revoke
-from ._token import post_token
-from ._userinfo import get_userinfo
+from typing import TYPE_CHECKING
 
-__all__ = ("get_authorize", "get_userinfo", "post_revoke", "post_token")
+if TYPE_CHECKING:
+    from .._client import Amasto
+
+__all__ = ("OAuthNamespace",)
+
+
+class OAuthNamespace:
+    __slots__ = ("authorize", "revoke", "token", "userinfo")
+
+    def __init__(self, client: Amasto, /) -> None:
+        from ._authorize import AuthorizeResource
+        from ._revoke import RevokeResource
+        from ._token import TokenResource
+        from ._userinfo import UserinfoResource
+
+        self.authorize = AuthorizeResource(client)
+        self.token = TokenResource(client)
+        self.revoke = RevokeResource(client)
+        self.userinfo = UserinfoResource(client)

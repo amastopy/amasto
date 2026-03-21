@@ -1,9 +1,12 @@
 from __future__ import annotations
 
-from .._endpoint import Endpoint
-from typing import TypedDict
+from .._resource import HttpMethod
+from typing import TYPE_CHECKING, TypedDict
 
-__all__ = ("post_revoke",)
+if TYPE_CHECKING:
+    from .._client import Amasto
+
+__all__ = ("RevokeResource",)
 
 
 class _RevokeBody(TypedDict, total=False):
@@ -12,10 +15,14 @@ class _RevokeBody(TypedDict, total=False):
     token: str
 
 
-post_revoke: Endpoint[dict, None, _RevokeBody] = Endpoint(
-    "POST",
-    "/oauth/revoke",
-    dict,
-    body=_RevokeBody,
-    requires="1.5.0",
-)
+class RevokeResource:
+    __slots__ = ("post",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.post: HttpMethod[dict, None, _RevokeBody] = HttpMethod(
+            client,
+            "POST",
+            "/oauth/revoke",
+            dict,
+            requires="1.5.0",
+        )

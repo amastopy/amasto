@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-from ..._endpoint import Endpoint, EndpointTemplate, SubscriptableEndpoint
+from ..._resource import HttpMethod
 from ...models.v2 import Filter, FilterKeyword, FilterStatus
-from typing import TypedDict
+from typing import TYPE_CHECKING, TypedDict
 
-__all__ = ("delete_filters", "filters", "get_filters", "post_filters", "put_filters")
+if TYPE_CHECKING:
+    from ..._client import Amasto
+
+__all__ = ("FiltersResource",)
 
 
 # ---------------------------------------------------------------------------
@@ -36,132 +39,182 @@ class _CreateFilterStatusBody(TypedDict):
 
 
 # ---------------------------------------------------------------------------
-# Flat endpoints
+# Top-level keyword / status lookups  (filters.keywords["id"])
 # ---------------------------------------------------------------------------
 
 
-get_filters: SubscriptableEndpoint[list[Filter], None, None, Filter] = SubscriptableEndpoint(
-    "GET",
-    "/api/v2/filters",
-    list[Filter],
-    "/api/v2/filters/{id}",
-    Filter,
-    requires="4.0.0",
-    item_requires="4.0.0",
-)
+class _FilterKeywordByIdResource:
+    __slots__ = ("delete", "get", "put")
 
-post_filters: Endpoint[Filter, None, _CreateFilterBody] = Endpoint(
-    "POST",
-    "/api/v2/filters",
-    Filter,
-    body=_CreateFilterBody,
-    requires="4.0.0",
-)
-
-put_filters: EndpointTemplate[Filter, None, _UpdateFilterBody] = EndpointTemplate(
-    "PUT",
-    "/api/v2/filters/{id}",
-    Filter,
-    body=_UpdateFilterBody,
-    requires="4.0.0",
-)
-
-delete_filters: EndpointTemplate[dict, None, None] = EndpointTemplate(
-    "DELETE",
-    "/api/v2/filters/{id}",
-    dict,
-    requires="4.0.0",
-)
-
-
-# ---------------------------------------------------------------------------
-# By-ID namespace
-# ---------------------------------------------------------------------------
-
-
-class _FiltersById:
-    __slots__ = ("get_keywords", "get_statuses", "post_keywords", "post_statuses")
-
-    def __init__(self, filter_id: str, /) -> None:
-        p = f"/api/v2/filters/{filter_id}"
-
-        self.get_keywords: Endpoint[list[FilterKeyword], None, None] = Endpoint(
+    def __init__(self, client: Amasto, keyword_id: str, /) -> None:
+        p = f"/api/v2/filters/keywords/{keyword_id}"
+        self.get: HttpMethod[FilterKeyword, None, None] = HttpMethod(
+            client,
             "GET",
-            f"{p}/keywords",
+            p,
+            FilterKeyword,
+            requires="4.0.0",
+        )
+        self.put: HttpMethod[FilterKeyword, None, _CreateKeywordBody] = HttpMethod(
+            client,
+            "PUT",
+            p,
+            FilterKeyword,
+            requires="4.0.0",
+        )
+        self.delete: HttpMethod[dict, None, None] = HttpMethod(
+            client,
+            "DELETE",
+            p,
+            dict,
+            requires="4.0.0",
+        )
+
+
+class _FilterKeywordsTopResource:
+    __slots__ = ("_client",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self._client = client
+
+    def __getitem__(self, keyword_id: str) -> _FilterKeywordByIdResource:
+        return _FilterKeywordByIdResource(self._client, keyword_id)
+
+
+class _FilterStatusByIdResource:
+    __slots__ = ("delete", "get")
+
+    def __init__(self, client: Amasto, status_id: str, /) -> None:
+        p = f"/api/v2/filters/statuses/{status_id}"
+        self.get: HttpMethod[FilterStatus, None, None] = HttpMethod(
+            client,
+            "GET",
+            p,
+            FilterStatus,
+            requires="4.0.0",
+        )
+        self.delete: HttpMethod[FilterStatus, None, None] = HttpMethod(
+            client,
+            "DELETE",
+            p,
+            FilterStatus,
+            requires="4.0.0",
+        )
+
+
+class _FilterStatusesTopResource:
+    __slots__ = ("_client",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self._client = client
+
+    def __getitem__(self, status_id: str) -> _FilterStatusByIdResource:
+        return _FilterStatusByIdResource(self._client, status_id)
+
+
+# ---------------------------------------------------------------------------
+# Per-filter sub-resources  (filters["filter_id"].keywords / .statuses)
+# ---------------------------------------------------------------------------
+
+
+class _FilterKeywordsSubResource:
+    __slots__ = ("get", "post")
+
+    def __init__(self, client: Amasto, filter_id: str, /) -> None:
+        p = f"/api/v2/filters/{filter_id}/keywords"
+        self.get: HttpMethod[list[FilterKeyword], None, None] = HttpMethod(
+            client,
+            "GET",
+            p,
             list[FilterKeyword],
             requires="4.0.0",
         )
-        self.post_keywords: Endpoint[FilterKeyword, None, _CreateKeywordBody] = Endpoint(
+        self.post: HttpMethod[FilterKeyword, None, _CreateKeywordBody] = HttpMethod(
+            client,
             "POST",
-            f"{p}/keywords",
+            p,
             FilterKeyword,
-            body=_CreateKeywordBody,
             requires="4.0.0",
         )
-        self.get_statuses: Endpoint[list[FilterStatus], None, None] = Endpoint(
+
+
+class _FilterStatusesSubResource:
+    __slots__ = ("get", "post")
+
+    def __init__(self, client: Amasto, filter_id: str, /) -> None:
+        p = f"/api/v2/filters/{filter_id}/statuses"
+        self.get: HttpMethod[list[FilterStatus], None, None] = HttpMethod(
+            client,
             "GET",
-            f"{p}/statuses",
+            p,
             list[FilterStatus],
             requires="4.0.0",
         )
-        self.post_statuses: Endpoint[FilterStatus, None, _CreateFilterStatusBody] = Endpoint(
+        self.post: HttpMethod[FilterStatus, None, _CreateFilterStatusBody] = HttpMethod(
+            client,
             "POST",
-            f"{p}/statuses",
+            p,
             FilterStatus,
-            body=_CreateFilterStatusBody,
             requires="4.0.0",
         )
 
 
-class _FilterKeywordsNamespace:
-    __slots__ = ()
+class _FilterByIdResource:
+    __slots__ = ("delete", "get", "keywords", "put", "statuses")
 
-    get: EndpointTemplate[FilterKeyword, None, None] = EndpointTemplate(
-        "GET",
-        "/api/v2/filters/keywords/{id}",
-        FilterKeyword,
-        requires="4.0.0",
-    )
-    put: EndpointTemplate[FilterKeyword, None, _CreateKeywordBody] = EndpointTemplate(
-        "PUT",
-        "/api/v2/filters/keywords/{id}",
-        FilterKeyword,
-        body=_CreateKeywordBody,
-        requires="4.0.0",
-    )
-    delete: EndpointTemplate[dict, None, None] = EndpointTemplate(
-        "DELETE",
-        "/api/v2/filters/keywords/{id}",
-        dict,
-        requires="4.0.0",
-    )
-
-
-class _FilterStatusesNamespace:
-    __slots__ = ()
-
-    get: EndpointTemplate[FilterStatus, None, None] = EndpointTemplate(
-        "GET",
-        "/api/v2/filters/statuses/{id}",
-        FilterStatus,
-        requires="4.0.0",
-    )
-    delete: EndpointTemplate[FilterStatus, None, None] = EndpointTemplate(
-        "DELETE",
-        "/api/v2/filters/statuses/{id}",
-        FilterStatus,
-        requires="4.0.0",
-    )
+    def __init__(self, client: Amasto, filter_id: str, /) -> None:
+        p = f"/api/v2/filters/{filter_id}"
+        self.get: HttpMethod[Filter, None, None] = HttpMethod(
+            client,
+            "GET",
+            p,
+            Filter,
+            requires="4.0.0",
+        )
+        self.put: HttpMethod[Filter, None, _UpdateFilterBody] = HttpMethod(
+            client,
+            "PUT",
+            p,
+            Filter,
+            requires="4.0.0",
+        )
+        self.delete: HttpMethod[dict, None, None] = HttpMethod(
+            client,
+            "DELETE",
+            p,
+            dict,
+            requires="4.0.0",
+        )
+        self.keywords = _FilterKeywordsSubResource(client, filter_id)
+        self.statuses = _FilterStatusesSubResource(client, filter_id)
 
 
-class _FiltersNamespace:
-    __slots__ = ()
-
-    keywords = _FilterKeywordsNamespace()
-    statuses = _FilterStatusesNamespace()
-
-    def __getitem__(self, filter_id: str) -> _FiltersById:
-        return _FiltersById(filter_id)
+# ---------------------------------------------------------------------------
+# Top-level resource
+# ---------------------------------------------------------------------------
 
 
-filters = _FiltersNamespace()
+class FiltersResource:
+    __slots__ = ("_client", "get", "keywords", "post", "statuses")
+
+    def __init__(self, client: Amasto, /) -> None:
+        self._client = client
+        self.get: HttpMethod[list[Filter], None, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v2/filters",
+            list[Filter],
+            requires="4.0.0",
+        )
+        self.post: HttpMethod[Filter, None, _CreateFilterBody] = HttpMethod(
+            client,
+            "POST",
+            "/api/v2/filters",
+            Filter,
+            requires="4.0.0",
+        )
+        self.keywords = _FilterKeywordsTopResource(client)
+        self.statuses = _FilterStatusesTopResource(client)
+
+    def __getitem__(self, filter_id: str) -> _FilterByIdResource:
+        return _FilterByIdResource(self._client, filter_id)

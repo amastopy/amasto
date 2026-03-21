@@ -1,41 +1,59 @@
 from __future__ import annotations
 
-from ..._endpoint import EndpointTemplate, SubscriptableEndpoint
 from ..._params import PaginationParams
+from ..._resource import HttpMethod
 from ...models.v1 import ScheduledStatus
-from typing import TypedDict
+from typing import TYPE_CHECKING, TypedDict
 
-__all__ = ("delete_scheduled_statuses", "get_scheduled_statuses", "put_scheduled_statuses")
+if TYPE_CHECKING:
+    from ..._client import Amasto
+
+__all__ = ("ScheduledStatusesResource",)
 
 
 class _UpdateScheduledStatusBody(TypedDict, total=False):
     scheduled_at: str
 
 
-get_scheduled_statuses: SubscriptableEndpoint[list[ScheduledStatus], PaginationParams, None, ScheduledStatus] = (
-    SubscriptableEndpoint(
-        "GET",
-        "/api/v1/scheduled_statuses",
-        list[ScheduledStatus],
-        "/api/v1/scheduled_statuses/{id}",
-        ScheduledStatus,
-        params=PaginationParams,
-        requires="2.7.0",
-        item_requires="2.7.0",
-    )
-)
+class _ScheduledStatusByIdResource:
+    __slots__ = ("delete", "get", "put")
 
-put_scheduled_statuses: EndpointTemplate[ScheduledStatus, None, _UpdateScheduledStatusBody] = EndpointTemplate(
-    "PUT",
-    "/api/v1/scheduled_statuses/{id}",
-    ScheduledStatus,
-    body=_UpdateScheduledStatusBody,
-    requires="2.7.0",
-)
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.get: HttpMethod[ScheduledStatus, None, None] = HttpMethod(
+            client,
+            "GET",
+            f"/api/v1/scheduled_statuses/{id}",
+            ScheduledStatus,
+            requires="2.7.0",
+        )
+        self.put: HttpMethod[ScheduledStatus, None, _UpdateScheduledStatusBody] = HttpMethod(
+            client,
+            "PUT",
+            f"/api/v1/scheduled_statuses/{id}",
+            ScheduledStatus,
+            requires="2.7.0",
+        )
+        self.delete: HttpMethod[dict, None, None] = HttpMethod(
+            client,
+            "DELETE",
+            f"/api/v1/scheduled_statuses/{id}",
+            dict,
+            requires="2.7.0",
+        )
 
-delete_scheduled_statuses: EndpointTemplate[dict, None, None] = EndpointTemplate(
-    "DELETE",
-    "/api/v1/scheduled_statuses/{id}",
-    dict,
-    requires="2.7.0",
-)
+
+class ScheduledStatusesResource:
+    __slots__ = ("_client", "get")
+
+    def __init__(self, client: Amasto, /) -> None:
+        self._client = client
+        self.get: HttpMethod[list[ScheduledStatus], PaginationParams, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v1/scheduled_statuses",
+            list[ScheduledStatus],
+            requires="2.7.0",
+        )
+
+    def __getitem__(self, id: str) -> _ScheduledStatusByIdResource:
+        return _ScheduledStatusByIdResource(self._client, id)

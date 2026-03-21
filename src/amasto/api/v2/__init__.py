@@ -1,22 +1,34 @@
-from ._filters import delete_filters, filters, get_filters, post_filters, put_filters
-from ._instance import get_instance
-from ._media import post_media
-from ._notification_policy import notification_policy
-from ._notifications import get_notifications, notifications
-from ._search import get_search
-from ._suggestions import get_suggestions
+from __future__ import annotations
 
-__all__ = (
-    "delete_filters",
-    "filters",
-    "get_filters",
-    "get_instance",
-    "get_notifications",
-    "get_search",
-    "get_suggestions",
-    "notification_policy",
-    "notifications",
-    "post_filters",
-    "post_media",
-    "put_filters",
-)
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..._client import Amasto
+
+__all__ = ("V2Namespace",)
+
+
+class V2Namespace:
+    __slots__ = (
+        "filters",
+        "instance",
+        "media",
+        "notifications",
+        "search",
+        "suggestions",
+    )
+
+    def __init__(self, client: Amasto, /) -> None:
+        from ._filters import FiltersResource
+        from ._instance import InstanceResource
+        from ._media import MediaResource
+        from ._notifications import NotificationsResource
+        from ._search import SearchResource
+        from ._suggestions import SuggestionsResource
+
+        self.filters = FiltersResource(client)
+        self.instance = InstanceResource(client)
+        self.media = MediaResource(client)
+        self.notifications = NotificationsResource(client)
+        self.search = SearchResource(client)
+        self.suggestions = SuggestionsResource(client)

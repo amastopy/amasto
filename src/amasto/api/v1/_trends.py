@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-from ..._endpoint import Endpoint
+from ..._resource import HttpMethod
 from ...models.v1 import Status, Tag, TrendsLink
-from typing import TypedDict
+from typing import TYPE_CHECKING, TypedDict
 
-__all__ = ("trends",)
+if TYPE_CHECKING:
+    from ..._client import Amasto
+
+__all__ = ("TrendsResource",)
 
 
 class _TrendsParams(TypedDict, total=False):
@@ -12,30 +15,49 @@ class _TrendsParams(TypedDict, total=False):
     offset: int
 
 
-class _TrendsNamespace:
-    __slots__ = ()
+class _TrendsTagsResource:
+    __slots__ = ("get",)
 
-    get_tags: Endpoint[list[Tag], _TrendsParams, None] = Endpoint(
-        "GET",
-        "/api/v1/trends/tags",
-        list[Tag],
-        params=_TrendsParams,
-        requires="3.0.0",
-    )
-    get_statuses: Endpoint[list[Status], _TrendsParams, None] = Endpoint(
-        "GET",
-        "/api/v1/trends/statuses",
-        list[Status],
-        params=_TrendsParams,
-        requires="3.5.0",
-    )
-    get_links: Endpoint[list[TrendsLink], _TrendsParams, None] = Endpoint(
-        "GET",
-        "/api/v1/trends/links",
-        list[TrendsLink],
-        params=_TrendsParams,
-        requires="3.5.0",
-    )
+    def __init__(self, client: Amasto, /) -> None:
+        self.get: HttpMethod[list[Tag], _TrendsParams, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v1/trends/tags",
+            list[Tag],
+            requires="3.0.0",
+        )
 
 
-trends = _TrendsNamespace()
+class _TrendsStatusesResource:
+    __slots__ = ("get",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.get: HttpMethod[list[Status], _TrendsParams, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v1/trends/statuses",
+            list[Status],
+            requires="3.5.0",
+        )
+
+
+class _TrendsLinksResource:
+    __slots__ = ("get",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.get: HttpMethod[list[TrendsLink], _TrendsParams, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v1/trends/links",
+            list[TrendsLink],
+            requires="3.5.0",
+        )
+
+
+class TrendsResource:
+    __slots__ = ("links", "statuses", "tags")
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.tags = _TrendsTagsResource(client)
+        self.statuses = _TrendsStatusesResource(client)
+        self.links = _TrendsLinksResource(client)

@@ -1,15 +1,24 @@
 from __future__ import annotations
 
-from ..._endpoint import Endpoint
 from ..._params import PaginationParams
+from ..._resource import HttpMethod
 from ...models.v1 import Account
+from typing import TYPE_CHECKING
 
-__all__ = ("get_endorsements",)
+if TYPE_CHECKING:
+    from ..._client import Amasto
 
-get_endorsements: Endpoint[list[Account], PaginationParams, None] = Endpoint(
-    "GET",
-    "/api/v1/endorsements",
-    list[Account],
-    params=PaginationParams,
-    requires="2.5.0",
-)
+__all__ = ("EndorsementsResource",)
+
+
+class EndorsementsResource:
+    __slots__ = ("get",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.get: HttpMethod[list[Account], PaginationParams, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v1/endorsements",
+            list[Account],
+            requires="2.5.0",
+        )

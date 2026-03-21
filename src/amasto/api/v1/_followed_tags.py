@@ -1,15 +1,24 @@
 from __future__ import annotations
 
-from ..._endpoint import Endpoint
 from ..._params import PaginationParams
+from ..._resource import HttpMethod
 from ...models.v1 import Tag
+from typing import TYPE_CHECKING
 
-__all__ = ("get_followed_tags",)
+if TYPE_CHECKING:
+    from ..._client import Amasto
 
-get_followed_tags: Endpoint[list[Tag], PaginationParams, None] = Endpoint(
-    "GET",
-    "/api/v1/followed_tags",
-    list[Tag],
-    params=PaginationParams,
-    requires="4.3.0",
-)
+__all__ = ("FollowedTagsResource",)
+
+
+class FollowedTagsResource:
+    __slots__ = ("get",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.get: HttpMethod[list[Tag], PaginationParams, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v1/followed_tags",
+            list[Tag],
+            requires="4.3.0",
+        )

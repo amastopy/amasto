@@ -1,14 +1,23 @@
 from __future__ import annotations
 
-from ..._endpoint import Endpoint
 from ..._params import PaginationParams
+from ..._resource import HttpMethod
 from ...models.v1 import Status
+from typing import TYPE_CHECKING
 
-__all__ = ("get_favourites",)
+if TYPE_CHECKING:
+    from ..._client import Amasto
 
-get_favourites: Endpoint[list[Status], PaginationParams, None] = Endpoint(
-    "GET",
-    "/api/v1/favourites",
-    list[Status],
-    params=PaginationParams,
-)
+__all__ = ("FavouritesResource",)
+
+
+class FavouritesResource:
+    __slots__ = ("get",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.get: HttpMethod[list[Status], PaginationParams, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v1/favourites",
+            list[Status],
+        )

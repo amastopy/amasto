@@ -1,13 +1,23 @@
 from __future__ import annotations
 
-from ..._endpoint import Endpoint
+from ..._resource import HttpMethod
 from ...models.v1 import CustomEmoji
+from typing import TYPE_CHECKING
 
-__all__ = ("get_custom_emojis",)
+if TYPE_CHECKING:
+    from ..._client import Amasto
 
-get_custom_emojis: Endpoint[list[CustomEmoji], None, None] = Endpoint(
-    "GET",
-    "/api/v1/custom_emojis",
-    list[CustomEmoji],
-    requires="2.0.1",
-)
+__all__ = ("CustomEmojisResource",)
+
+
+class CustomEmojisResource:
+    __slots__ = ("get",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.get: HttpMethod[list[CustomEmoji], None, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v1/custom_emojis",
+            list[CustomEmoji],
+            requires="2.0.1",
+        )

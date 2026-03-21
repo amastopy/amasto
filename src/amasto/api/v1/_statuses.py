@@ -1,11 +1,14 @@
 from __future__ import annotations
 
-from ..._endpoint import Endpoint, EndpointTemplate, SubscriptableEndpoint
 from ..._params import PaginationParams
+from ..._resource import HttpMethod
 from ...models.v1 import Account, Context, Status, StatusEdit, StatusSource, Translation
-from typing import TypedDict
+from typing import TYPE_CHECKING, TypedDict
 
-__all__ = ("delete_statuses", "get_statuses", "post_statuses", "put_statuses", "statuses")
+if TYPE_CHECKING:
+    from ..._client import Amasto
+
+__all__ = ("StatusesResource",)
 
 
 # ---------------------------------------------------------------------------
@@ -65,166 +68,355 @@ class _InteractionPolicyBody(TypedDict, total=False):
 
 
 # ---------------------------------------------------------------------------
-# Flat endpoints
+# Sub-resources for by-ID
 # ---------------------------------------------------------------------------
 
 
-post_statuses: Endpoint[Status, None, _CreateStatusBody] = Endpoint(
-    "POST",
-    "/api/v1/statuses",
-    Status,
-    body=_CreateStatusBody,
-)
+class _ContextResource:
+    __slots__ = ("get",)
 
-get_statuses: SubscriptableEndpoint[list[Status], _GetStatusesParams, None, Status] = SubscriptableEndpoint(
-    "GET",
-    "/api/v1/statuses",
-    list[Status],
-    "/api/v1/statuses/{id}",
-    Status,
-    params=_GetStatusesParams,
-    requires="4.3.0",
-)
-
-delete_statuses: EndpointTemplate[Status, _DeleteStatusParams, None] = EndpointTemplate(
-    "DELETE",
-    "/api/v1/statuses/{id}",
-    Status,
-    params=_DeleteStatusParams,
-)
-
-put_statuses: EndpointTemplate[Status, None, _EditStatusBody] = EndpointTemplate(
-    "PUT",
-    "/api/v1/statuses/{id}",
-    Status,
-    body=_EditStatusBody,
-    requires="3.5.0",
-)
-
-
-# ---------------------------------------------------------------------------
-# By-ID namespace
-# ---------------------------------------------------------------------------
-
-
-class _StatusQuotesById:
-    __slots__ = ("post_revoke",)
-
-    def __init__(self, status_id: str, quoting_status_id: str, /) -> None:
-        self.post_revoke = Endpoint(
-            "POST",
-            f"/api/v1/statuses/{status_id}/quotes/{quoting_status_id}/revoke",
-            Status,
-            requires="4.5.0",
-        )
-
-
-class _StatusQuotesNamespace:
-    __slots__ = ("_status_id", "get_quotes")
-
-    def __init__(self, status_id: str, /) -> None:
-        self._status_id = status_id
-        self.get_quotes: Endpoint[list[Status], PaginationParams, None] = Endpoint(
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.get: HttpMethod[Context, None, None] = HttpMethod(
+            client,
             "GET",
-            f"/api/v1/statuses/{status_id}/quotes",
-            list[Status],
-            params=PaginationParams,
-            requires="4.5.0",
+            f"/api/v1/statuses/{id}/context",
+            Context,
         )
 
-    def __getitem__(self, quoting_status_id: str) -> _StatusQuotesById:
-        return _StatusQuotesById(self._status_id, quoting_status_id)
 
+class _TranslateResource:
+    __slots__ = ("post",)
 
-class _StatusesById:
-    __slots__ = (
-        "get_context",
-        "get_favourited_by",
-        "get_history",
-        "get_reblogged_by",
-        "get_source",
-        "post_bookmark",
-        "post_favourite",
-        "post_mute",
-        "post_pin",
-        "post_reblog",
-        "post_translate",
-        "post_unbookmark",
-        "post_unfavourite",
-        "post_unmute",
-        "post_unpin",
-        "post_unreblog",
-        "put_interaction_policy",
-        "quotes",
-    )
-
-    def __init__(self, id: str, /) -> None:
-        p = f"/api/v1/statuses/{id}"
-
-        self.get_context = Endpoint("GET", f"{p}/context", Context)
-        self.post_translate: Endpoint[Translation, None, _TranslateBody] = Endpoint(
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.post: HttpMethod[Translation, None, _TranslateBody] = HttpMethod(
+            client,
             "POST",
-            f"{p}/translate",
+            f"/api/v1/statuses/{id}/translate",
             Translation,
-            body=_TranslateBody,
             requires="4.0.0",
         )
-        self.get_reblogged_by: Endpoint[list[Account], PaginationParams, None] = Endpoint(
+
+
+class _RebloggedByResource:
+    __slots__ = ("get",)
+
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.get: HttpMethod[list[Account], PaginationParams, None] = HttpMethod(
+            client,
             "GET",
-            f"{p}/reblogged_by",
+            f"/api/v1/statuses/{id}/reblogged_by",
             list[Account],
-            params=PaginationParams,
         )
-        self.get_favourited_by: Endpoint[list[Account], PaginationParams, None] = Endpoint(
+
+
+class _FavouritedByResource:
+    __slots__ = ("get",)
+
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.get: HttpMethod[list[Account], PaginationParams, None] = HttpMethod(
+            client,
             "GET",
-            f"{p}/favourited_by",
+            f"/api/v1/statuses/{id}/favourited_by",
             list[Account],
-            params=PaginationParams,
         )
-        self.get_history: Endpoint[list[StatusEdit], None, None] = Endpoint(
+
+
+class _HistoryResource:
+    __slots__ = ("get",)
+
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.get: HttpMethod[list[StatusEdit], None, None] = HttpMethod(
+            client,
             "GET",
-            f"{p}/history",
+            f"/api/v1/statuses/{id}/history",
             list[StatusEdit],
             requires="3.5.0",
         )
-        self.get_source = Endpoint("GET", f"{p}/source", StatusSource, requires="3.5.0")
 
-        self.post_favourite = Endpoint("POST", f"{p}/favourite", Status)
-        self.post_unfavourite = Endpoint("POST", f"{p}/unfavourite", Status)
-        self.post_reblog: Endpoint[Status, None, _ReblogBody] = Endpoint(
-            "POST",
-            f"{p}/reblog",
-            Status,
-            body=_ReblogBody,
+
+class _SourceResource:
+    __slots__ = ("get",)
+
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.get: HttpMethod[StatusSource, None, None] = HttpMethod(
+            client,
+            "GET",
+            f"/api/v1/statuses/{id}/source",
+            StatusSource,
+            requires="3.5.0",
         )
-        self.post_unreblog = Endpoint("POST", f"{p}/unreblog", Status)
-        self.post_bookmark = Endpoint("POST", f"{p}/bookmark", Status, requires="3.1.0")
-        self.post_unbookmark = Endpoint("POST", f"{p}/unbookmark", Status, requires="3.1.0")
-        self.post_mute = Endpoint("POST", f"{p}/mute", Status, requires="1.4.2")
-        self.post_unmute = Endpoint("POST", f"{p}/unmute", Status, requires="1.4.2")
-        self.post_pin = Endpoint("POST", f"{p}/pin", Status, requires="1.6.0")
-        self.post_unpin = Endpoint("POST", f"{p}/unpin", Status, requires="1.6.0")
-        self.put_interaction_policy: Endpoint[Status, None, _InteractionPolicyBody] = Endpoint(
-            "PUT",
-            f"{p}/interaction_policy",
+
+
+class _FavouriteActionResource:
+    __slots__ = ("post",)
+
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.post: HttpMethod[Status, None, None] = HttpMethod(
+            client,
+            "POST",
+            f"/api/v1/statuses/{id}/favourite",
             Status,
-            body=_InteractionPolicyBody,
+        )
+
+
+class _UnfavouriteResource:
+    __slots__ = ("post",)
+
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.post: HttpMethod[Status, None, None] = HttpMethod(
+            client,
+            "POST",
+            f"/api/v1/statuses/{id}/unfavourite",
+            Status,
+        )
+
+
+class _ReblogActionResource:
+    __slots__ = ("post",)
+
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.post: HttpMethod[Status, None, _ReblogBody] = HttpMethod(
+            client,
+            "POST",
+            f"/api/v1/statuses/{id}/reblog",
+            Status,
+        )
+
+
+class _UnreblogResource:
+    __slots__ = ("post",)
+
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.post: HttpMethod[Status, None, None] = HttpMethod(
+            client,
+            "POST",
+            f"/api/v1/statuses/{id}/unreblog",
+            Status,
+        )
+
+
+class _BookmarkActionResource:
+    __slots__ = ("post",)
+
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.post: HttpMethod[Status, None, None] = HttpMethod(
+            client,
+            "POST",
+            f"/api/v1/statuses/{id}/bookmark",
+            Status,
+            requires="3.1.0",
+        )
+
+
+class _UnbookmarkResource:
+    __slots__ = ("post",)
+
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.post: HttpMethod[Status, None, None] = HttpMethod(
+            client,
+            "POST",
+            f"/api/v1/statuses/{id}/unbookmark",
+            Status,
+            requires="3.1.0",
+        )
+
+
+class _MuteStatusResource:
+    __slots__ = ("post",)
+
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.post: HttpMethod[Status, None, None] = HttpMethod(
+            client,
+            "POST",
+            f"/api/v1/statuses/{id}/mute",
+            Status,
+            requires="1.4.2",
+        )
+
+
+class _UnmuteStatusResource:
+    __slots__ = ("post",)
+
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.post: HttpMethod[Status, None, None] = HttpMethod(
+            client,
+            "POST",
+            f"/api/v1/statuses/{id}/unmute",
+            Status,
+            requires="1.4.2",
+        )
+
+
+class _PinStatusResource:
+    __slots__ = ("post",)
+
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.post: HttpMethod[Status, None, None] = HttpMethod(
+            client,
+            "POST",
+            f"/api/v1/statuses/{id}/pin",
+            Status,
+            requires="1.6.0",
+        )
+
+
+class _UnpinStatusResource:
+    __slots__ = ("post",)
+
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.post: HttpMethod[Status, None, None] = HttpMethod(
+            client,
+            "POST",
+            f"/api/v1/statuses/{id}/unpin",
+            Status,
+            requires="1.6.0",
+        )
+
+
+class _InteractionPolicyResource:
+    __slots__ = ("put",)
+
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.put: HttpMethod[Status, None, _InteractionPolicyBody] = HttpMethod(
+            client,
+            "PUT",
+            f"/api/v1/statuses/{id}/interaction_policy",
+            Status,
             requires="4.5.0",
         )
 
-        self.quotes = _StatusQuotesNamespace(id)
+
+class _RevokeResource:
+    __slots__ = ("post",)
+
+    def __init__(self, client: Amasto, status_id: str, quoting_id: str, /) -> None:
+        self.post: HttpMethod[Status, None, None] = HttpMethod(
+            client,
+            "POST",
+            f"/api/v1/statuses/{status_id}/quotes/{quoting_id}/revoke",
+            Status,
+            requires="4.5.0",
+        )
+
+
+class _QuoteByIdResource:
+    __slots__ = ("revoke",)
+
+    def __init__(self, client: Amasto, status_id: str, quoting_id: str, /) -> None:
+        self.revoke = _RevokeResource(client, status_id, quoting_id)
+
+
+class _QuotesResource:
+    __slots__ = ("_client", "_status_id", "get")
+
+    def __init__(self, client: Amasto, status_id: str, /) -> None:
+        self._client = client
+        self._status_id = status_id
+        self.get: HttpMethod[list[Status], PaginationParams, None] = HttpMethod(
+            client,
+            "GET",
+            f"/api/v1/statuses/{status_id}/quotes",
+            list[Status],
+            requires="4.5.0",
+        )
+
+    def __getitem__(self, quoting_id: str) -> _QuoteByIdResource:
+        return _QuoteByIdResource(self._client, self._status_id, quoting_id)
 
 
 # ---------------------------------------------------------------------------
-# Namespace
+# By-ID resource
 # ---------------------------------------------------------------------------
 
 
-class _StatusesNamespace:
-    __slots__ = ()
+class _StatusByIdResource:
+    __slots__ = (
+        "bookmark",
+        "context",
+        "delete",
+        "favourite",
+        "favourited_by",
+        "get",
+        "history",
+        "interaction_policy",
+        "mute",
+        "pin",
+        "put",
+        "quotes",
+        "reblog",
+        "reblogged_by",
+        "source",
+        "translate",
+        "unbookmark",
+        "unfavourite",
+        "unmute",
+        "unpin",
+        "unreblog",
+    )
 
-    def __getitem__(self, id: str) -> _StatusesById:
-        return _StatusesById(id)
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.get: HttpMethod[Status, None, None] = HttpMethod(
+            client,
+            "GET",
+            f"/api/v1/statuses/{id}",
+            Status,
+        )
+        self.put: HttpMethod[Status, None, _EditStatusBody] = HttpMethod(
+            client,
+            "PUT",
+            f"/api/v1/statuses/{id}",
+            Status,
+            requires="3.5.0",
+        )
+        self.delete: HttpMethod[Status, _DeleteStatusParams, None] = HttpMethod(
+            client,
+            "DELETE",
+            f"/api/v1/statuses/{id}",
+            Status,
+        )
+        self.context = _ContextResource(client, id)
+        self.translate = _TranslateResource(client, id)
+        self.reblogged_by = _RebloggedByResource(client, id)
+        self.favourited_by = _FavouritedByResource(client, id)
+        self.history = _HistoryResource(client, id)
+        self.source = _SourceResource(client, id)
+        self.favourite = _FavouriteActionResource(client, id)
+        self.unfavourite = _UnfavouriteResource(client, id)
+        self.reblog = _ReblogActionResource(client, id)
+        self.unreblog = _UnreblogResource(client, id)
+        self.bookmark = _BookmarkActionResource(client, id)
+        self.unbookmark = _UnbookmarkResource(client, id)
+        self.mute = _MuteStatusResource(client, id)
+        self.unmute = _UnmuteStatusResource(client, id)
+        self.pin = _PinStatusResource(client, id)
+        self.unpin = _UnpinStatusResource(client, id)
+        self.interaction_policy = _InteractionPolicyResource(client, id)
+        self.quotes = _QuotesResource(client, id)
 
 
-statuses = _StatusesNamespace()
+# ---------------------------------------------------------------------------
+# Top-level resource
+# ---------------------------------------------------------------------------
+
+
+class StatusesResource:
+    __slots__ = ("_client", "get", "post")
+
+    def __init__(self, client: Amasto, /) -> None:
+        self._client = client
+        self.get: HttpMethod[list[Status], _GetStatusesParams, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v1/statuses",
+            list[Status],
+            requires="4.3.0",
+        )
+        self.post: HttpMethod[Status, None, _CreateStatusBody] = HttpMethod(
+            client,
+            "POST",
+            "/api/v1/statuses",
+            Status,
+        )
+
+    def __getitem__(self, id: str) -> _StatusByIdResource:
+        return _StatusByIdResource(self._client, id)

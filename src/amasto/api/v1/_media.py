@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-from ..._endpoint import EndpointTemplate
+from ..._resource import HttpMethod
 from ...models.v1 import MediaAttachment
-from typing import TypedDict
+from typing import TYPE_CHECKING, TypedDict
 
-__all__ = ("delete_media", "get_media", "put_media")
+if TYPE_CHECKING:
+    from ..._client import Amasto
+
+__all__ = ("MediaResource",)
 
 
 class _UpdateMediaBody(TypedDict, total=False):
@@ -12,22 +15,36 @@ class _UpdateMediaBody(TypedDict, total=False):
     focus: str
 
 
-get_media: EndpointTemplate[MediaAttachment, None, None] = EndpointTemplate(
-    "GET",
-    "/api/v1/media/{id}",
-    MediaAttachment,
-)
+class _MediaByIdResource:
+    __slots__ = ("delete", "get", "put")
 
-put_media: EndpointTemplate[MediaAttachment, None, _UpdateMediaBody] = EndpointTemplate(
-    "PUT",
-    "/api/v1/media/{id}",
-    MediaAttachment,
-    body=_UpdateMediaBody,
-)
+    def __init__(self, client: Amasto, id: str, /) -> None:
+        self.get: HttpMethod[MediaAttachment, None, None] = HttpMethod(
+            client,
+            "GET",
+            f"/api/v1/media/{id}",
+            MediaAttachment,
+        )
+        self.put: HttpMethod[MediaAttachment, None, _UpdateMediaBody] = HttpMethod(
+            client,
+            "PUT",
+            f"/api/v1/media/{id}",
+            MediaAttachment,
+        )
+        self.delete: HttpMethod[dict, None, None] = HttpMethod(
+            client,
+            "DELETE",
+            f"/api/v1/media/{id}",
+            dict,
+            requires="4.4.0",
+        )
 
-delete_media: EndpointTemplate[dict, None, None] = EndpointTemplate(
-    "DELETE",
-    "/api/v1/media/{id}",
-    dict,
-    requires="4.4.0",
-)
+
+class MediaResource:
+    __slots__ = ("_client",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self._client = client
+
+    def __getitem__(self, id: str) -> _MediaByIdResource:
+        return _MediaByIdResource(self._client, id)

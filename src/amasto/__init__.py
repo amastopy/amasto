@@ -2,14 +2,11 @@
 
 from __future__ import annotations
 
-from . import api, health, models, oauth
+from . import models
 from ._client import Amasto
 from typing import Final
 
 __all__: Final = (
     "Amasto",
-    "api",
-    "health",
     "models",
-    "oauth",
 )

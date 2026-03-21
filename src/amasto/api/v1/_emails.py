@@ -1,25 +1,33 @@
 from __future__ import annotations
 
-from ..._endpoint import Endpoint
-from typing import TypedDict
+from ..._resource import HttpMethod
+from typing import TYPE_CHECKING, TypedDict
 
-__all__ = ("emails",)
+if TYPE_CHECKING:
+    from ..._client import Amasto
+
+__all__ = ("EmailsResource",)
 
 
 class _ConfirmationBody(TypedDict, total=False):
     email: str
 
 
-class _EmailsNamespace:
-    __slots__ = ()
+class _ConfirmationsResource:
+    __slots__ = ("post",)
 
-    post_confirmations: Endpoint[dict, None, _ConfirmationBody] = Endpoint(
-        "POST",
-        "/api/v1/emails/confirmations",
-        dict,
-        body=_ConfirmationBody,
-        requires="2.7.2",
-    )
+    def __init__(self, client: Amasto, /) -> None:
+        self.post: HttpMethod[dict, None, _ConfirmationBody] = HttpMethod(
+            client,
+            "POST",
+            "/api/v1/emails/confirmations",
+            dict,
+            requires="2.7.2",
+        )
 
 
-emails = _EmailsNamespace()
+class EmailsResource:
+    __slots__ = ("confirmations",)
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.confirmations = _ConfirmationsResource(client)

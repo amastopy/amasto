@@ -1,10 +1,14 @@
 from __future__ import annotations
 
-from ..._endpoint import Endpoint
+from ..._resource import HttpMethod
 from ...models.v1 import Account
-from typing import TypedDict
+from ...models.v2 import NotificationPolicy
+from typing import TYPE_CHECKING, TypedDict
 
-__all__ = ("get_notifications", "notifications")
+if TYPE_CHECKING:
+    from ..._client import Amasto
+
+__all__ = ("NotificationsResource",)
 
 
 # ---------------------------------------------------------------------------
@@ -33,52 +37,105 @@ class _UnreadCountParams(TypedDict, total=False):
     grouped_types: list[str]
 
 
-# ---------------------------------------------------------------------------
-# Flat endpoints
-# ---------------------------------------------------------------------------
-
-
-get_notifications: Endpoint[dict, _GroupedNotificationsParams, None] = Endpoint(
-    "GET",
-    "/api/v2/notifications",
-    dict,
-    params=_GroupedNotificationsParams,
-    requires="4.3.0",
-)
+class _UpdatePolicyBody(TypedDict, total=False):
+    for_not_following: str
+    for_not_followers: str
+    for_new_accounts: str
+    for_private_mentions: str
+    for_limited_accounts: str
 
 
 # ---------------------------------------------------------------------------
-# By-group-key namespace
+# Sub-resources
 # ---------------------------------------------------------------------------
 
 
-class _NotificationsByGroupKey:
-    __slots__ = ("get_accounts", "post_dismiss")
+class _UnreadCountResource:
+    __slots__ = ("get",)
 
-    def __init__(self, group_key: str, /) -> None:
-        p = f"/api/v2/notifications/{group_key}"
-        self.post_dismiss = Endpoint("POST", f"{p}/dismiss", dict, requires="4.3.0")
-        self.get_accounts: Endpoint[list[Account], None, None] = Endpoint(
+    def __init__(self, client: Amasto, /) -> None:
+        self.get: HttpMethod[dict, _UnreadCountParams, None] = HttpMethod(
+            client,
             "GET",
-            f"{p}/accounts",
+            "/api/v2/notifications/unread_count",
+            dict,
+            requires="4.3.0",
+        )
+
+
+class _PolicyResource:
+    __slots__ = ("get", "patch")
+
+    def __init__(self, client: Amasto, /) -> None:
+        self.get: HttpMethod[NotificationPolicy, None, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v2/notifications/policy",
+            NotificationPolicy,
+            requires="4.3.0",
+        )
+        self.patch: HttpMethod[NotificationPolicy, None, _UpdatePolicyBody] = HttpMethod(
+            client,
+            "PATCH",
+            "/api/v2/notifications/policy",
+            NotificationPolicy,
+            requires="4.3.0",
+        )
+
+
+class _DismissResource:
+    __slots__ = ("post",)
+
+    def __init__(self, client: Amasto, group_key: str, /) -> None:
+        self.post: HttpMethod[dict, None, None] = HttpMethod(
+            client,
+            "POST",
+            f"/api/v2/notifications/{group_key}/dismiss",
+            dict,
+            requires="4.3.0",
+        )
+
+
+class _AccountsResource:
+    __slots__ = ("get",)
+
+    def __init__(self, client: Amasto, group_key: str, /) -> None:
+        self.get: HttpMethod[list[Account], None, None] = HttpMethod(
+            client,
+            "GET",
+            f"/api/v2/notifications/{group_key}/accounts",
             list[Account],
             requires="4.3.0",
         )
 
 
-class _NotificationsNamespace:
-    __slots__ = ()
+class _NotificationByGroupKeyResource:
+    __slots__ = ("accounts", "dismiss")
 
-    get_unread_count: Endpoint[dict, _UnreadCountParams, None] = Endpoint(
-        "GET",
-        "/api/v2/notifications/unread_count",
-        dict,
-        params=_UnreadCountParams,
-        requires="4.3.0",
-    )
-
-    def __getitem__(self, group_key: str) -> _NotificationsByGroupKey:
-        return _NotificationsByGroupKey(group_key)
+    def __init__(self, client: Amasto, group_key: str, /) -> None:
+        self.dismiss = _DismissResource(client, group_key)
+        self.accounts = _AccountsResource(client, group_key)
 
 
-notifications = _NotificationsNamespace()
+# ---------------------------------------------------------------------------
+# Top-level resource
+# ---------------------------------------------------------------------------
+
+
+class NotificationsResource:
+    __slots__ = ("_client", "get", "policy", "unread_count")
+
+    def __init__(self, client: Amasto, /) -> None:
+        self._client = client
+        self.get: HttpMethod[dict, _GroupedNotificationsParams, None] = HttpMethod(
+            client,
+            "GET",
+            "/api/v2/notifications",
+            dict,
+            requires="4.3.0",
+        )
+        self.unread_count = _UnreadCountResource(client)
+        self.policy = _PolicyResource(client)
+
+    def __getitem__(self, group_key: str) -> _NotificationByGroupKeyResource:
+        return _NotificationByGroupKeyResource(self._client, group_key)
