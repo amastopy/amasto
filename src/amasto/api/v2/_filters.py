@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from ..._resource import HttpMethod
 from ...models.v2 import Filter, FilterKeyword, FilterStatus
-from typing import TYPE_CHECKING, TypedDict
+from typing import TYPE_CHECKING, Literal, TypedDict
 
 if TYPE_CHECKING:
     from ..._client import Amasto
@@ -17,15 +17,15 @@ __all__ = ("FiltersResource",)
 
 class _CreateFilterBody(TypedDict, total=False):
     title: str
-    context: list[str]
-    filter_action: str
+    context: list[str | Literal["home", "notifications", "public", "thread", "account"]]
+    filter_action: str | Literal["warn", "hide", "blur"]
     expires_in: int
 
 
 class _UpdateFilterBody(TypedDict, total=False):
     title: str
-    context: list[str]
-    filter_action: str
+    context: list[str | Literal["home", "notifications", "public", "thread", "account"]]
+    filter_action: str | Literal["warn", "hide", "blur"]
     expires_in: int
 
 

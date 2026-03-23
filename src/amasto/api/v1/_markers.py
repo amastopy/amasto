@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from ..._resource import HttpMethod
 from ...models.v1 import Marker
-from typing import TYPE_CHECKING, TypedDict
+from typing import TYPE_CHECKING, Literal, TypedDict
 
 if TYPE_CHECKING:
     from ..._client import Amasto
@@ -11,7 +11,7 @@ __all__ = ("MarkersResource",)
 
 
 class _GetMarkersParams(TypedDict, total=False):
-    timeline: list[str]
+    timeline: list[str | Literal["home", "notifications"]]
 
 
 class _MarkerTimeline(TypedDict, total=False):

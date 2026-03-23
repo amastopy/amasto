@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from ..._resource import HttpMethod
 from ...models.v1 import Account
-from typing import TYPE_CHECKING, TypedDict
+from typing import TYPE_CHECKING, Literal, TypedDict
 
 if TYPE_CHECKING:
     from ..._client import Amasto
@@ -13,7 +13,7 @@ __all__ = ("DirectoryResource",)
 class _DirectoryParams(TypedDict, total=False):
     offset: int
     limit: int
-    order: str
+    order: str | Literal["active", "new"]
     local: bool
 
 

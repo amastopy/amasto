@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from ..._resource import HttpMethod
 from ...models.v1 import Report
-from typing import TYPE_CHECKING, TypedDict
+from typing import TYPE_CHECKING, Literal, TypedDict
 
 if TYPE_CHECKING:
     from ..._client import Amasto
@@ -15,7 +15,7 @@ class _ReportBody(TypedDict, total=False):
     status_ids: list[str]
     comment: str
     forward: bool
-    category: str
+    category: str | Literal["spam", "legal", "violation", "other"]
     rule_ids: list[str]
 
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from ..._resource import HttpMethod
 from ...models.v1 import WebPushSubscription
-from typing import TYPE_CHECKING, TypedDict
+from typing import TYPE_CHECKING, Literal, TypedDict
 
 if TYPE_CHECKING:
     from ..._client import Amasto
@@ -35,7 +35,7 @@ class _PushAlerts(TypedDict, total=False):
 
 class _PushData(TypedDict, total=False):
     alerts: _PushAlerts
-    policy: str
+    policy: str | Literal["all", "followed", "follower", "none"]
 
 
 class _CreatePushBody(TypedDict, total=False):

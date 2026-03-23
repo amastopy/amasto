@@ -3,7 +3,7 @@ from __future__ import annotations
 from ..._params import PaginationParams
 from ..._resource import HttpMethod
 from ...models.v1 import Account, Context, Status, StatusEdit, StatusSource, Translation
-from typing import TYPE_CHECKING, TypedDict
+from typing import TYPE_CHECKING, Literal, TypedDict
 
 if TYPE_CHECKING:
     from ..._client import Amasto
@@ -34,11 +34,11 @@ class _CreateStatusBody(TypedDict, total=False):
     in_reply_to_id: str
     sensitive: bool
     spoiler_text: str
-    visibility: str
+    visibility: str | Literal["public", "unlisted", "private", "direct"]
     language: str
     scheduled_at: str
     quoted_status_id: str
-    quote_approval_policy: str
+    quote_approval_policy: str | Literal["public", "followers", "nobody"]
 
 
 class _EditStatusBody(TypedDict, total=False):
@@ -48,7 +48,7 @@ class _EditStatusBody(TypedDict, total=False):
     language: str
     media_ids: list[str]
     poll: _CreateStatusPoll
-    quote_approval_policy: str
+    quote_approval_policy: str | Literal["public", "followers", "nobody"]
 
 
 class _DeleteStatusParams(TypedDict, total=False):
@@ -60,11 +60,11 @@ class _TranslateBody(TypedDict, total=False):
 
 
 class _ReblogBody(TypedDict, total=False):
-    visibility: str
+    visibility: str | Literal["public", "unlisted", "private"]
 
 
 class _InteractionPolicyBody(TypedDict, total=False):
-    quote_approval_policy: str
+    quote_approval_policy: str | Literal["public", "followers", "nobody"]
 
 
 # ---------------------------------------------------------------------------

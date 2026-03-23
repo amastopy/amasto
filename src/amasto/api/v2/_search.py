@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from ..._resource import HttpMethod
 from ...models.v1 import Search
-from typing import TYPE_CHECKING, TypedDict
+from typing import TYPE_CHECKING, Literal, TypedDict
 
 if TYPE_CHECKING:
     from ..._client import Amasto
@@ -12,7 +12,7 @@ __all__ = ("SearchResource",)
 
 class _SearchParams(TypedDict, total=False):
     q: str
-    type: str
+    type: str | Literal["accounts", "hashtags", "statuses"]
     resolve: bool
     following: bool
     account_id: str

@@ -3,7 +3,7 @@ from __future__ import annotations
 from ..._params import PaginationParams
 from ..._resource import HttpMethod
 from ...models.v1 import Notification, NotificationRequest
-from typing import TYPE_CHECKING, TypedDict
+from typing import TYPE_CHECKING, Literal, TypedDict
 
 if TYPE_CHECKING:
     from ..._client import Amasto
@@ -16,16 +16,16 @@ class _NotificationsParams(TypedDict, total=False):
     since_id: str
     min_id: str
     limit: int
-    types: list[str]
-    exclude_types: list[str]
+    types: list[str | Literal["mention", "status", "reblog", "follow", "follow_request", "favourite", "poll", "update", "admin.sign_up", "admin.report"]]
+    exclude_types: list[str | Literal["mention", "status", "reblog", "follow", "follow_request", "favourite", "poll", "update", "admin.sign_up", "admin.report"]]
     account_id: str
     include_filtered: bool
 
 
 class _UnreadCountParams(TypedDict, total=False):
     limit: int
-    types: list[str]
-    exclude_types: list[str]
+    types: list[str | Literal["mention", "status", "reblog", "follow", "follow_request", "favourite", "poll", "update", "admin.sign_up", "admin.report"]]
+    exclude_types: list[str | Literal["mention", "status", "reblog", "follow", "follow_request", "favourite", "poll", "update", "admin.sign_up", "admin.report"]]
     account_id: str
 
 

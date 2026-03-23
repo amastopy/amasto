@@ -3,7 +3,7 @@ from __future__ import annotations
 from ..._params import PaginationParams
 from ..._resource import HttpMethod
 from ...models.v1 import Account, List
-from typing import TYPE_CHECKING, TypedDict
+from typing import TYPE_CHECKING, Literal, TypedDict
 
 if TYPE_CHECKING:
     from ..._client import Amasto
@@ -13,13 +13,13 @@ __all__ = ("ListsResource",)
 
 class _CreateListBody(TypedDict, total=False):
     title: str
-    replies_policy: str
+    replies_policy: str | Literal["followed", "list", "none"]
     exclusive: bool
 
 
 class _UpdateListBody(TypedDict, total=False):
     title: str
-    replies_policy: str
+    replies_policy: str | Literal["followed", "list", "none"]
     exclusive: bool
 
 
