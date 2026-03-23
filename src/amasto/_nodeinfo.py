@@ -42,7 +42,7 @@ class NodeInfo(BaseModel):
         return self.openRegistrations
 
     @staticmethod
-    def _nodeinfo_url(jrd_response: Response):
+    def _nodeinfo_url(jrd_response: Response) -> str:
         jrd_response.raise_for_status()
         jrd = jrd_response.json()
         jrd_links = jrd.get("links", [])
