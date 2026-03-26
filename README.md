@@ -31,6 +31,7 @@ uv add amasto
 ## Quick start
 
 ```python
+import asyncio
 from amasto import Amasto
 
 async def main() -> None:
@@ -44,6 +45,8 @@ async def main() -> None:
 
     # List accounts the user is following
     accounts = await client.api.v1.accounts["123456"].following.get()
+
+asyncio.run(main())
 ```
 
 ## Client
@@ -73,6 +76,16 @@ Each leaf node is an `HttpMethod` instance that is:
 - **Async-callable** — `await method(params=..., body=...)` executes the HTTP request and returns a validated response.
 - **Introspectable** — `.method`, `.path`, and `.requires` expose the HTTP verb, URL path, and minimum server version.
 - **Test-friendly** — `.parse(data)` validates data against the response type without making HTTP calls.
+
+```python
+# Validate data without HTTP (useful in tests)
+status = client.api.v1.statuses["123"].get.parse({
+    "id": "123",
+    "content": "<p>Hello</p>",
+    "account": {"id": "1", "username": "alice", ...},
+    ...
+})
+```
 
 ### API v1 (`client.api.v1`)
 
@@ -144,6 +157,111 @@ Each leaf node is an `HttpMethod` instance that is:
 |---|---|
 | `.get` | Server health check |
 
+## Examples
+
+### Reading timelines
+
+```python
+# Home timeline
+statuses = await client.api.v1.timelines.home.get(params={"limit": 20})
+for s in statuses:
+    print(f"{s.account.username}: {s.content}")
+
+# Local public timeline
+statuses = await client.api.v1.timelines.public.get(params={"local": True})
+
+# Hashtag timeline
+statuses = await client.api.v1.timelines.tag["python"].get()
+```
+
+### Posting and interacting with statuses
+
+```python
+# Post a new status
+status = await client.api.v1.statuses.post(body={
+    "status": "Hello, Fediverse!",
+    "visibility": "public",
+    "language": "en",
+})
+
+# Post a status with a poll
+status = await client.api.v1.statuses.post(body={
+    "status": "What's your favourite language?",
+    "poll": {
+        "options": ["Python", "Rust", "TypeScript"],
+        "expires_in": 86400,
+        "multiple": False,
+    },
+})
+
+# Favourite / boost / bookmark
+await client.api.v1.statuses["123456"].favourite.post()
+await client.api.v1.statuses["123456"].reblog.post()
+await client.api.v1.statuses["123456"].bookmark.post()
+
+# Get thread context
+context = await client.api.v1.statuses["123456"].context.get()
+print(context.ancestors, context.descendants)
+```
+
+### Accounts
+
+```python
+# Verify your own credentials
+me = await client.api.v1.accounts.verify_credentials.get()
+print(me.username, me.followers_count)
+
+# Look up another account
+account = await client.api.v1.accounts["12345"].get()
+
+# List followers with pagination
+followers = await client.api.v1.accounts["12345"].followers.get(
+    params={"limit": 40},
+)
+```
+
+### Search
+
+```python
+results = await client.api.v1.search.get(params={
+    "q": "python",
+    "resolve": True,
+    "limit": 10,
+})
+for account in results.accounts:
+    print(account.acct)
+for status in results.statuses:
+    print(status.content)
+```
+
+### Notifications
+
+```python
+# Fetch only mentions
+mentions = await client.api.v1.notifications.get(params={
+    "types": ["mention"],
+    "limit": 30,
+})
+for n in mentions:
+    print(f"{n.account.username} mentioned you: {n.status.content}")
+```
+
+### Pagination
+
+List endpoints accept `max_id`, `since_id`, `min_id`, and `limit` for cursor-based pagination:
+
+```python
+# First page
+statuses = await client.api.v1.timelines.home.get(params={"limit": 40})
+
+# Next page — use the last item's ID
+if statuses:
+    older = await client.api.v1.timelines.home.get(params={
+        "max_id": statuses[-1].id,
+        "limit": 40,
+    })
+```
+
 ## Models
 
 Response models live under `amasto.models` and are re-exported from `amasto.models.v1` and `amasto.models.v2`. All models are frozen Pydantic `BaseModel` subclasses.
@@ -164,17 +282,50 @@ Response models live under `amasto.models` and are re-exported from `amasto.mode
 
 ## Version awareness
 
-Model fields annotated with `since("x.y.z")` resolve to `Unsupported` when the connected server is older than the specified version, so your code can safely handle missing data:
+Model fields annotated with `since("x.y.z")` resolve to `Unsupported` when the connected server is older than the specified version, so your code can safely handle missing data.
+
+A field can be in one of three states:
+
+| State | Meaning |
+|---|---|
+| `str`, `int`, … | Supported and has a value |
+| `None` | Supported but has no value |
+| `Unsupported` | Server too old to support this field |
 
 ```python
-from amasto.models import Status
-from amasto._version import Unsupported
+from amasto import Unsupported
 
+status = await client.api.v1.statuses["123456"].get()
+
+# Pattern matching (Python 3.14+)
+match status.text:
+    case str() as t:
+        print(t)          # supported, has a value
+    case None:
+        pass              # supported, no value
+    case Unsupported():
+        pass              # server too old for this field
+
+# Or use isinstance
 if not isinstance(status.poll, Unsupported):
     print(status.poll)
 ```
 
 Endpoints can also declare `requires="x.y.z"` to indicate the minimum server version.
+
+## Error handling
+
+amasto raises [`httpx.HTTPStatusError`](https://www.python-httpx.org/exceptions/) for non-2xx responses:
+
+```python
+import httpx
+
+try:
+    status = await client.api.v1.statuses["nonexistent"].get()
+except httpx.HTTPStatusError as e:
+    print(e.response.status_code)  # 404
+    print(e.response.json())       # {"error": "Record not found"}
+```
 
 ## Dependencies
 

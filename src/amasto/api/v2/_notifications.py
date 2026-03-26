@@ -21,20 +21,104 @@ class _GroupedNotificationsParams(TypedDict, total=False):
     since_id: str
     min_id: str
     limit: int
-    types: list[str | Literal["mention", "status", "reblog", "follow", "follow_request", "favourite", "poll", "update", "admin.sign_up", "admin.report"]]
-    exclude_types: list[str | Literal["mention", "status", "reblog", "follow", "follow_request", "favourite", "poll", "update", "admin.sign_up", "admin.report"]]
+    types: list[
+        str
+        | Literal[
+            "mention",
+            "status",
+            "reblog",
+            "follow",
+            "follow_request",
+            "favourite",
+            "poll",
+            "update",
+            "admin.sign_up",
+            "admin.report",
+        ]
+    ]
+    exclude_types: list[
+        str
+        | Literal[
+            "mention",
+            "status",
+            "reblog",
+            "follow",
+            "follow_request",
+            "favourite",
+            "poll",
+            "update",
+            "admin.sign_up",
+            "admin.report",
+        ]
+    ]
     account_id: str
     expand_accounts: str | Literal["full", "partial_avatars"]
-    grouped_types: list[str | Literal["mention", "status", "reblog", "follow", "follow_request", "favourite", "poll", "update", "admin.sign_up", "admin.report"]]
+    grouped_types: list[
+        str
+        | Literal[
+            "mention",
+            "status",
+            "reblog",
+            "follow",
+            "follow_request",
+            "favourite",
+            "poll",
+            "update",
+            "admin.sign_up",
+            "admin.report",
+        ]
+    ]
     include_filtered: bool
 
 
 class _UnreadCountParams(TypedDict, total=False):
     limit: int
-    types: list[str | Literal["mention", "status", "reblog", "follow", "follow_request", "favourite", "poll", "update", "admin.sign_up", "admin.report"]]
-    exclude_types: list[str | Literal["mention", "status", "reblog", "follow", "follow_request", "favourite", "poll", "update", "admin.sign_up", "admin.report"]]
+    types: list[
+        str
+        | Literal[
+            "mention",
+            "status",
+            "reblog",
+            "follow",
+            "follow_request",
+            "favourite",
+            "poll",
+            "update",
+            "admin.sign_up",
+            "admin.report",
+        ]
+    ]
+    exclude_types: list[
+        str
+        | Literal[
+            "mention",
+            "status",
+            "reblog",
+            "follow",
+            "follow_request",
+            "favourite",
+            "poll",
+            "update",
+            "admin.sign_up",
+            "admin.report",
+        ]
+    ]
     account_id: str
-    grouped_types: list[str | Literal["mention", "status", "reblog", "follow", "follow_request", "favourite", "poll", "update", "admin.sign_up", "admin.report"]]
+    grouped_types: list[
+        str
+        | Literal[
+            "mention",
+            "status",
+            "reblog",
+            "follow",
+            "follow_request",
+            "favourite",
+            "poll",
+            "update",
+            "admin.sign_up",
+            "admin.report",
+        ]
+    ]
 
 
 class _UpdatePolicyBody(TypedDict, total=False):
