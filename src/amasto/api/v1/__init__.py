@@ -39,6 +39,7 @@ class V1Namespace:
         "scheduled_statuses",
         "search",
         "statuses",
+        "streaming",
         "suggestions",
         "tags",
         "timelines",
@@ -75,6 +76,7 @@ class V1Namespace:
         from ._scheduled_statuses import ScheduledStatusesResource
         from ._search import SearchResource
         from ._statuses import StatusesResource
+        from ._streaming import StreamingResource
         from ._suggestions import SuggestionsResource
         from ._tags import TagsResource
         from ._timelines import TimelinesResource
@@ -109,6 +111,7 @@ class V1Namespace:
         self.scheduled_statuses = ScheduledStatusesResource(client)
         self.search = SearchResource(client)
         self.statuses = StatusesResource(client)
+        self.streaming = StreamingResource(client)
         self.suggestions = SuggestionsResource(client)
         self.tags = TagsResource(client)
         self.timelines = TimelinesResource(client)

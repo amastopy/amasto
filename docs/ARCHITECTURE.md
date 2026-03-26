@@ -15,43 +15,45 @@ This document describes the design decisions and module structure of **amasto**,
 
 ```
 src/amasto/
-├── __init__.py          # Public re-exports: Amasto, models
+├── __init__.py           # Public re-exports: Amasto, models
 ├── py.typed
-├── _client.py           # Amasto — the main entry point
-├── _resource.py         # HttpMethod[T, P, B] — async-callable HTTP method
-├── _pagination.py       # PaginatedHttpMethod[T, P] — cursor-based pagination
-├── _nodeinfo.py         # NodeInfo auto-discovery
-├── _params.py           # Shared TypedDicts (e.g. PaginationParams)
-├── _version.py          # since() / Unsupported version-awareness helpers
+├── _client.py            # Amasto — the main entry point
+├── _resource.py          # HttpMethod[T, P, B] — async-callable HTTP method
+├── _pagination.py        # PaginatedHttpMethod[T, P] — cursor-based pagination
+├── _nodeinfo.py          # NodeInfo auto-discovery
+├── _params.py            # Shared TypedDicts (e.g. PaginationParams)
+├── _version.py           # since() / Unsupported version-awareness helpers
+├── _streaming.py         # WebSocket streaming dispatcher + reconnection
 │
-├── models/              # Pydantic v2 response models
-│   ├── __init__.py      # Re-exports from v1 + v2
-│   ├── v1/              # V1 API models
-│   └── v2/              # V2 API models
+├── models/               # Pydantic v2 response models
+│   ├── __init__.py       # Re-exports from v1 + v2
+│   ├── v1/               # V1 API models
+│   └── v2/               # V2 API models
 │
-├── api/                 # Resource-based API namespaces
-│   ├── __init__.py      # ApiNamespace(client) — composes v1, v2, oembed
-│   ├── _oembed.py       # OEmbedResource
+├── api/                  # Resource-based API namespaces
+│   ├── __init__.py       # ApiNamespace(client) — composes v1, v2, oembed
+│   ├── _oembed.py        # OEmbedResource
 │   ├── v1/
-│   │   ├── __init__.py  # V1Namespace(client) — composes all 33 resources
-│   │   ├── _accounts.py # AccountsResource
-│   │   ├── _statuses.py # StatusesResource
+│   │   ├── __init__.py   # V1Namespace(client) — composes all 33 resources
+│   │   ├── _accounts.py  # AccountsResource
+│   │   ├── _statuses.py  # StatusesResource
+│   │   ├── _streaming.py # StreamingResource
 │   │   └── ...
 │   └── v2/
-│       ├── __init__.py  # V2Namespace(client) — composes 6 resources
-│       ├── _filters.py  # FiltersResource
+│       ├── __init__.py   # V2Namespace(client) — composes 6 resources
+│       ├── _filters.py   # FiltersResource
 │       └── ...
 │
-├── oauth/               # OAuth namespace
-│   ├── __init__.py      # OAuthNamespace(client)
-│   ├── _authorize.py    # AuthorizeResource
-│   ├── _token.py        # TokenResource
-│   ├── _revoke.py       # RevokeResource
-│   └── _userinfo.py     # UserinfoResource
+├── oauth/                # OAuth namespace
+│   ├── __init__.py       # OAuthNamespace(client)
+│   ├── _authorize.py     # AuthorizeResource
+│   ├── _token.py         # TokenResource
+│   ├── _revoke.py        # RevokeResource
+│   └── _userinfo.py      # UserinfoResource
 │
-└── health/              # Health endpoint
+└── health/               # Health endpoint
     ├── __init__.py
-    └── _health.py       # HealthResource
+    └── _health.py        # HealthResource
 ```
 
 ### `_client.py` — `Amasto`
@@ -70,6 +72,8 @@ accounts = await client.api.v1.accounts["123"].followers.get()
 - `self.api` → `ApiNamespace(self)` → `V1Namespace`, `V2Namespace`, `OEmbedResource`
 - `self.oauth` → `OAuthNamespace(self)` → `AuthorizeResource`, `TokenResource`, …
 - `self.health` → `HealthResource(self)`
+
+During `_initialize()`, `Amasto` also calls `/api/v1/instance` to discover the WebSocket streaming URL and stores it as `_streaming_url`.
 
 Lazy imports in `__init__` prevent circular dependency issues since resource files reference the `Amasto` type for type checking.
 
@@ -157,6 +161,26 @@ Endpoints can declare `requires="x.y.z"` to indicate the minimum server version 
 
 ---
 
+## Streaming
+
+Real-time streaming uses `websockets` over a persistent WebSocket connection to the Mastodon streaming endpoint.
+
+### Architecture
+
+- **`_streaming.py`** — Low-level async generator `stream_events()` that manages the WebSocket lifecycle: connection, subscribe message, event dispatch, and automatic reconnection with exponential back-off via `ReconnectPolicy`.
+- **`api/v1/_streaming.py`** — `StreamingResource` exposed as `client.api.v1.streaming`. Provides named methods (`user()`, `public()`, `hashtag(tag)`, etc.) that delegate to `stream_events()`.
+- **`models/v1/_stream_event.py`** — 11 typed Pydantic event models plus `StreamEvent` type alias.
+
+### Protocol
+
+1. The WebSocket endpoint URL (`wss://...`) is discovered during client initialisation from the `/api/v1/instance` response (`urls.streaming_api`).
+2. Authentication is performed via the `Authorization: Bearer` header on the WebSocket handshake.
+3. After connecting, a `{"type": "subscribe", "stream": "..."}` JSON message is sent to select the stream.
+4. Incoming messages have the shape `{"stream": [...], "event": "...", "payload": "..."}`. The `payload` is a string-encoded JSON for most events; `delete` and `announcement.delete` payloads are plain string IDs.
+5. On connection loss, the generator sleeps with exponential back-off (configurable via `ReconnectPolicy`) and reconnects. HTTP 4xx handshake errors propagate immediately.
+
+---
+
 ## Python Version Policy
 
 The minimum supported version is **Python 3.14** (as declared in `pyproject.toml`). Features added in 3.14 (e.g. improved `asyncio` internals, generic class syntax) may be used freely.
@@ -170,6 +194,7 @@ The minimum supported version is **Python 3.14** (as declared in `pyproject.toml
 | `httpx` | Async HTTP client | Runtime |
 | `pydantic` | Response model validation & serialisation | Runtime |
 | `semver` | Server version parsing | Runtime |
+| `websockets` | WebSocket streaming | Runtime |
 | `pytest` + `pytest-asyncio` | Test runner | Dev |
 | `respx` | Mock `httpx` in tests | Dev |
 | `ruff` | Linter & formatter | Dev |

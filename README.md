@@ -11,6 +11,7 @@ Fully async, type-safe Python client for the [Mastodon API](https://docs.joinmas
 - **Type-safe** — Typed endpoint descriptors and [Pydantic](https://docs.pydantic.dev/) response models; ships with `py.typed`
 - **Version-aware** — Automatic server version detection via NodeInfo; models mark field availability with `since()` / `Unsupported`
 - **Pagination** — `PaginatedHttpMethod.paginate()` async iterator transparently follows `Link: rel="next"` headers across pages
+- **Streaming** — Real-time WebSocket streaming with typed events, automatic reconnection, and exponential back-off
 - **Minimal surface area** — Small, deliberate public API
 
 ## Requirements
@@ -136,6 +137,7 @@ status = client.api.v1.statuses["123"].get.parse({
 | `scheduled_statuses` | `.get`, `["id"].get`, `["id"].put`, `["id"].delete` |
 | `search` | `.get` |
 | `statuses` | `.get`, `.post`, `["id"].get`, `["id"].put`, `["id"].delete`, `["id"].context.get`, `["id"].favourite.post`, … |
+| `streaming` | `.user()`, `.user_notification()`, `.public()`, `.public_local()`, `.public_remote()`, `.hashtag(tag)`, `.list(list_id)`, `.direct()` |
 | `suggestions` | `.get`, `["id"].delete` |
 | `tags` | `["key"].get`, `["key"].follow.post`, `["key"].unfollow.post` |
 | `timelines` | `.public.get`, `.home.get`, `.link.get`, `.direct.get`, `.tag["hashtag"].get`, `.list["id"].get` |
@@ -278,6 +280,63 @@ if statuses:
     })
 ```
 
+## Streaming
+
+The client supports real-time streaming via WebSocket. Each streaming method returns an async iterator that yields typed event models:
+
+```python
+async for event in client.api.v1.streaming.user():
+    match event:
+        case UpdateEvent() as e:
+            print(f"New status: {e.status.content}")
+        case DeleteEvent() as e:
+            print(f"Deleted: {e.status_id}")
+        case NotificationEvent() as e:
+            print(f"Notification: {e.notification.type}")
+```
+
+### Available streams
+
+| Method | Stream | Description |
+|---|---|---|
+| `streaming.user()` | `user` | Statuses, notifications, and other events for the authenticated user |
+| `streaming.user_notification()` | `user:notification` | Notifications only |
+| `streaming.public()` | `public` | All public statuses (pass `only_media=True` for media-only) |
+| `streaming.public_local()` | `public:local` | Local public statuses |
+| `streaming.public_remote()` | `public:remote` | Remote public statuses |
+| `streaming.hashtag(tag)` | `hashtag` | Statuses with the given hashtag (pass `local=True` for local only) |
+| `streaming.list(list_id)` | `list` | Statuses from a specific list |
+| `streaming.direct()` | `direct` | Direct messages |
+
+### Reconnection
+
+All streaming methods automatically reconnect with exponential back-off when the connection drops. Customize the policy with `ReconnectPolicy`:
+
+```python
+from amasto import ReconnectPolicy
+
+policy = ReconnectPolicy(max_retries=10, initial_delay=0.5, max_delay=60.0)
+
+async for event in client.api.v1.streaming.user(reconnect=policy):
+    ...
+```
+
+### Event types
+
+| Event class | Trigger | Key fields |
+|---|---|---|
+| `UpdateEvent` | New status | `status` |
+| `DeleteEvent` | Status deleted | `status_id` |
+| `NotificationEvent` | New notification | `notification` |
+| `FiltersChangedEvent` | Filters updated | — |
+| `ConversationEvent` | Direct conversation updated | `conversation` |
+| `AnnouncementEvent` | New announcement | `announcement` |
+| `AnnouncementReactionEvent` | Reaction on announcement | `name`, `count`, `announcement_id` |
+| `AnnouncementDeleteEvent` | Announcement deleted | `announcement_id` |
+| `StatusUpdateEvent` | Status edited | `status` |
+| `EncryptedMessageEvent` | Encrypted message | `encrypted_message` |
+| `NotificationsMergedEvent` | Notification requests merged | — |
+
 ## Models
 
 Response models live under `amasto.models` and are re-exported from `amasto.models.v1` and `amasto.models.v2`. All models are frozen Pydantic `BaseModel` subclasses.
@@ -285,7 +344,7 @@ Response models live under `amasto.models` and are re-exported from `amasto.mode
 <details>
 <summary>V1 models</summary>
 
-`Account`, `AccountRole`, `AccountSource`, `AccountWarning`, `Announcement`, `AnnouncementAccount`, `AnnouncementStatus`, `Appeal`, `Application`, `AsyncRefresh`, `Context`, `Conversation`, `CredentialAccount`, `CredentialApplication`, `CustomEmoji`, `DomainBlock`, `EncryptedMessage`, `Error`, `ExtendedDescription`, `FamiliarFollowers`, `FeaturedTag`, `Field`, `IdentityProof`, `InstanceStats`, `InstanceUrls`, `List`, `Marker`, `MediaAttachment`, `MutedAccount`, `Notification`, `NotificationRequest`, `Poll`, `PollOption`, `Preferences`, `PreviewCard`, `PreviewCardAuthor`, `PrivacyPolicy`, `Quote`, `QuoteApproval`, `Reaction`, `Relationship`, `RelationshipSeveranceEvent`, `Report`, `Role`, `Rule`, `ScheduledStatus`, `ScheduledStatusParams`, `ScheduledStatusParamsPoll`, `Search`, `ShallowQuote`, `Status`, `StatusEdit`, `StatusEditPoll`, `StatusEditPollOption`, `StatusMention`, `StatusSource`, `StatusTag`, `Suggestion`, `Tag`, `TagHistory`, `TermsOfService`, `Token`, `Translation`, `TranslationAttachment`, `TranslationPoll`, `TranslationPollOption`, `TrendsLink`, `WebPushAlerts`, `WebPushSubscription`
+`Account`, `AccountRole`, `AccountSource`, `AccountWarning`, `Announcement`, `AnnouncementAccount`, `AnnouncementDeleteEvent`, `AnnouncementEvent`, `AnnouncementReactionEvent`, `AnnouncementStatus`, `Appeal`, `Application`, `AsyncRefresh`, `Context`, `Conversation`, `ConversationEvent`, `CredentialAccount`, `CredentialApplication`, `CustomEmoji`, `DeleteEvent`, `DomainBlock`, `EncryptedMessage`, `EncryptedMessageEvent`, `Error`, `ExtendedDescription`, `FamiliarFollowers`, `FeaturedTag`, `Field`, `FiltersChangedEvent`, `IdentityProof`, `InstanceStats`, `InstanceUrls`, `List`, `Marker`, `MediaAttachment`, `MutedAccount`, `Notification`, `NotificationEvent`, `NotificationRequest`, `NotificationsMergedEvent`, `Poll`, `PollOption`, `Preferences`, `PreviewCard`, `PreviewCardAuthor`, `PrivacyPolicy`, `Quote`, `QuoteApproval`, `Reaction`, `Relationship`, `RelationshipSeveranceEvent`, `Report`, `Role`, `Rule`, `ScheduledStatus`, `ScheduledStatusParams`, `ScheduledStatusParamsPoll`, `Search`, `ShallowQuote`, `Status`, `StatusEdit`, `StatusEditPoll`, `StatusEditPollOption`, `StatusMention`, `StatusSource`, `StatusTag`, `StatusUpdateEvent`, `StreamEvent`, `Suggestion`, `Tag`, `TagHistory`, `TermsOfService`, `Token`, `Translation`, `TranslationAttachment`, `TranslationPoll`, `TranslationPollOption`, `TrendsLink`, `UpdateEvent`, `WebPushAlerts`, `WebPushSubscription`
 
 </details>
 
@@ -350,6 +409,7 @@ except httpx.HTTPStatusError as e:
 | [httpx](https://www.python-httpx.org/) ≥ 0.28.1 | Async HTTP client |
 | [pydantic](https://docs.pydantic.dev/) ≥ 2.12.5 | Response validation and models |
 | [semver](https://python-semver.readthedocs.io/) ≥ 3.0.4 | Server version parsing |
+| [websockets](https://websockets.readthedocs.io/) ≥ 16.0 | WebSocket streaming |
 
 ## License
 
