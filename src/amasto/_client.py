@@ -10,7 +10,7 @@ class Amasto:
         "_api_key",
         "_base_url",
         "_http",
-        "_initialization_event",
+        "_initialized",
         "_mastodon_version",
         "api",
         "health",
@@ -20,7 +20,7 @@ class Amasto:
     _base_url: str
     _api_key: str
     _mastodon_version: Version | None
-    _initialization_event: bool
+    _initialized: bool
     _http: httpx.AsyncClient
 
     def __init__(
@@ -42,7 +42,7 @@ class Amasto:
             base_url=base_url,
             headers={"Authorization": f"Bearer {api_key}"},
         )
-        self._initialization_event = False
+        self._initialized = False
 
         self.api = ApiNamespace(self)
         self.oauth = OAuthNamespace(self)
@@ -50,7 +50,7 @@ class Amasto:
 
         if mastodon_version is not None:
             self._mastodon_version = mastodon_version
-            self._initialization_event = True
+            self._initialized = True
         else:
             self._initialize()
 
@@ -58,9 +58,9 @@ class Amasto:
         self,
         /,
     ) -> None:
-        if self._initialization_event:
+        if self._initialized:
             return
         nodeinfo = NodeInfo.fetch(self._base_url)
         if nodeinfo.software.name == "mastodon":
             self._mastodon_version = Version.parse(nodeinfo.software.version)
-        self._initialization_event = True
+        self._initialized = True

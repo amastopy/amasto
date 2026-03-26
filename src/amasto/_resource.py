@@ -60,7 +60,8 @@ class HttpMethod[T, P = None, B = None]:
         raw: dict[str, Any] | None = None,
     ) -> T:
         """Execute the HTTP request and return a validated response."""
-        await self._client._initialization_event.wait()  # noqa: SLF001
+        if not self._client._initialized:  # noqa: SLF001
+            raise RuntimeError("Client is not initialized")
 
         response = await self._client._http.request(  # noqa: SLF001
             self.method,
