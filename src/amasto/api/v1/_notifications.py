@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ..._pagination import PaginatedHttpMethod
 from ..._params import PaginationParams
 from ..._resource import HttpMethod
 from ...models.v1 import Notification, NotificationRequest
@@ -197,11 +198,11 @@ class _NotificationRequestsResource:
 
     def __init__(self, client: Amasto, /) -> None:
         self._client = client
-        self.get: HttpMethod[list[NotificationRequest], PaginationParams, None] = HttpMethod(
+        self.get: PaginatedHttpMethod[NotificationRequest, PaginationParams] = PaginatedHttpMethod(
             client,
             "GET",
             "/api/v1/notifications/requests",
-            list[NotificationRequest],
+            NotificationRequest,
             requires="4.3.0",
         )
         self.accept = _BulkAcceptResource(client)
@@ -248,11 +249,11 @@ class NotificationsResource:
 
     def __init__(self, client: Amasto, /) -> None:
         self._client = client
-        self.get: HttpMethod[list[Notification], _NotificationsParams, None] = HttpMethod(
+        self.get: PaginatedHttpMethod[Notification, _NotificationsParams] = PaginatedHttpMethod(
             client,
             "GET",
             "/api/v1/notifications",
-            list[Notification],
+            Notification,
         )
         self.clear = _ClearResource(client)
         self.unread_count = _UnreadCountResource(client)

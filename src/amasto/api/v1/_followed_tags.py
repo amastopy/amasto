@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from ..._pagination import PaginatedHttpMethod
 from ..._params import PaginationParams
-from ..._resource import HttpMethod
 from ...models.v1 import Tag
 from typing import TYPE_CHECKING
 
@@ -15,10 +15,10 @@ class FollowedTagsResource:
     __slots__ = ("get",)
 
     def __init__(self, client: Amasto, /) -> None:
-        self.get: HttpMethod[list[Tag], PaginationParams, None] = HttpMethod(
+        self.get: PaginatedHttpMethod[Tag, PaginationParams] = PaginatedHttpMethod(
             client,
             "GET",
             "/api/v1/followed_tags",
-            list[Tag],
+            Tag,
             requires="4.3.0",
         )

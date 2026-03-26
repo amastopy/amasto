@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from ..._pagination import PaginatedHttpMethod
 from ..._params import PaginationParams
-from ..._resource import HttpMethod
 from ...models.v1 import Status
 from typing import TYPE_CHECKING, TypedDict
 
@@ -46,11 +46,11 @@ class _PublicResource:
     __slots__ = ("get",)
 
     def __init__(self, client: Amasto, /) -> None:
-        self.get: HttpMethod[list[Status], _PublicTimelineParams, None] = HttpMethod(
+        self.get: PaginatedHttpMethod[Status, _PublicTimelineParams] = PaginatedHttpMethod(
             client,
             "GET",
             "/api/v1/timelines/public",
-            list[Status],
+            Status,
         )
 
 
@@ -58,11 +58,11 @@ class _HomeResource:
     __slots__ = ("get",)
 
     def __init__(self, client: Amasto, /) -> None:
-        self.get: HttpMethod[list[Status], PaginationParams, None] = HttpMethod(
+        self.get: PaginatedHttpMethod[Status, PaginationParams] = PaginatedHttpMethod(
             client,
             "GET",
             "/api/v1/timelines/home",
-            list[Status],
+            Status,
         )
 
 
@@ -70,11 +70,11 @@ class _LinkResource:
     __slots__ = ("get",)
 
     def __init__(self, client: Amasto, /) -> None:
-        self.get: HttpMethod[list[Status], _LinkTimelineParams, None] = HttpMethod(
+        self.get: PaginatedHttpMethod[Status, _LinkTimelineParams] = PaginatedHttpMethod(
             client,
             "GET",
             "/api/v1/timelines/link",
-            list[Status],
+            Status,
             requires="4.3.0",
         )
 
@@ -83,11 +83,11 @@ class _DirectResource:
     __slots__ = ("get",)
 
     def __init__(self, client: Amasto, /) -> None:
-        self.get: HttpMethod[list[Status], PaginationParams, None] = HttpMethod(
+        self.get: PaginatedHttpMethod[Status, PaginationParams] = PaginatedHttpMethod(
             client,
             "GET",
             "/api/v1/timelines/direct",
-            list[Status],
+            Status,
         )
 
 
@@ -95,11 +95,11 @@ class _TagByHashtagResource:
     __slots__ = ("get",)
 
     def __init__(self, client: Amasto, hashtag: str, /) -> None:
-        self.get: HttpMethod[list[Status], _TagTimelineParams, None] = HttpMethod(
+        self.get: PaginatedHttpMethod[Status, _TagTimelineParams] = PaginatedHttpMethod(
             client,
             "GET",
             f"/api/v1/timelines/tag/{hashtag}",
-            list[Status],
+            Status,
         )
 
 
@@ -117,11 +117,11 @@ class _ListByIdResource:
     __slots__ = ("get",)
 
     def __init__(self, client: Amasto, id: str, /) -> None:
-        self.get: HttpMethod[list[Status], PaginationParams, None] = HttpMethod(
+        self.get: PaginatedHttpMethod[Status, PaginationParams] = PaginatedHttpMethod(
             client,
             "GET",
             f"/api/v1/timelines/list/{id}",
-            list[Status],
+            Status,
             requires="2.1.0",
         )
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ..._pagination import PaginatedHttpMethod
 from ..._params import PaginationParams
 from ..._resource import HttpMethod
 from ...models.v1 import Account, Context, Status, StatusEdit, StatusSource, Translation
@@ -101,11 +102,11 @@ class _RebloggedByResource:
     __slots__ = ("get",)
 
     def __init__(self, client: Amasto, id: str, /) -> None:
-        self.get: HttpMethod[list[Account], PaginationParams, None] = HttpMethod(
+        self.get: PaginatedHttpMethod[Account, PaginationParams] = PaginatedHttpMethod(
             client,
             "GET",
             f"/api/v1/statuses/{id}/reblogged_by",
-            list[Account],
+            Account,
         )
 
 
@@ -113,11 +114,11 @@ class _FavouritedByResource:
     __slots__ = ("get",)
 
     def __init__(self, client: Amasto, id: str, /) -> None:
-        self.get: HttpMethod[list[Account], PaginationParams, None] = HttpMethod(
+        self.get: PaginatedHttpMethod[Account, PaginationParams] = PaginatedHttpMethod(
             client,
             "GET",
             f"/api/v1/statuses/{id}/favourited_by",
-            list[Account],
+            Account,
         )
 
 
@@ -312,11 +313,11 @@ class _QuotesResource:
     def __init__(self, client: Amasto, status_id: str, /) -> None:
         self._client = client
         self._status_id = status_id
-        self.get: HttpMethod[list[Status], PaginationParams, None] = HttpMethod(
+        self.get: PaginatedHttpMethod[Status, PaginationParams] = PaginatedHttpMethod(
             client,
             "GET",
             f"/api/v1/statuses/{status_id}/quotes",
-            list[Status],
+            Status,
             requires="4.5.0",
         )
 

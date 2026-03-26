@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ..._pagination import PaginatedHttpMethod
 from ..._params import PaginationParams
 from ..._resource import HttpMethod
 from ...models.v1 import ScheduledStatus
@@ -47,11 +48,11 @@ class ScheduledStatusesResource:
 
     def __init__(self, client: Amasto, /) -> None:
         self._client = client
-        self.get: HttpMethod[list[ScheduledStatus], PaginationParams, None] = HttpMethod(
+        self.get: PaginatedHttpMethod[ScheduledStatus, PaginationParams] = PaginatedHttpMethod(
             client,
             "GET",
             "/api/v1/scheduled_statuses",
-            list[ScheduledStatus],
+            ScheduledStatus,
             requires="2.7.0",
         )
 
