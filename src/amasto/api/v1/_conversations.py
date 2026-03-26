@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ..._pagination import PaginatedHttpMethod
 from ..._params import PaginationParams
 from ..._resource import HttpMethod
 from ...models.v1 import Conversation
@@ -43,11 +44,11 @@ class ConversationsResource:
 
     def __init__(self, client: Amasto, /) -> None:
         self._client = client
-        self.get: HttpMethod[list[Conversation], PaginationParams, None] = HttpMethod(
+        self.get: PaginatedHttpMethod[Conversation, PaginationParams] = PaginatedHttpMethod(
             client,
             "GET",
             "/api/v1/conversations",
-            list[Conversation],
+            Conversation,
             requires="2.6.0",
         )
 

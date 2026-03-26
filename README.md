@@ -10,6 +10,7 @@ Fully async, type-safe Python client for the [Mastodon API](https://docs.joinmas
 - **Async-first** — All I/O uses `async`/`await` via [httpx](https://www.python-httpx.org/)
 - **Type-safe** — Typed endpoint descriptors and [Pydantic](https://docs.pydantic.dev/) response models; ships with `py.typed`
 - **Version-aware** — Automatic server version detection via NodeInfo; models mark field availability with `since()` / `Unsupported`
+- **Pagination** — `PaginatedHttpMethod.paginate()` async iterator transparently follows `Link: rel="next"` headers across pages
 - **Minimal surface area** — Small, deliberate public API
 
 ## Requirements
@@ -76,6 +77,21 @@ Each leaf node is an `HttpMethod` instance that is:
 - **Async-callable** — `await method(params=..., body=...)` executes the HTTP request and returns a validated response.
 - **Introspectable** — `.method`, `.path`, and `.requires` expose the HTTP verb, URL path, and minimum server version.
 - **Test-friendly** — `.parse(data)` validates data against the response type without making HTTP calls.
+
+List endpoints (bookmarks, timelines, followers, …) use `PaginatedHttpMethod` which adds a `.paginate()` async iterator:
+
+```python
+# Single page (default behaviour, backwards compatible)
+statuses = await client.api.v1.timelines.home.get()
+
+# Iterate across all pages automatically
+async for status in client.api.v1.timelines.home.get.paginate(params={"limit": 40}):
+    print(f"{status.account.username}: {status.content}")
+
+# Stop after a maximum number of items
+async for status in client.api.v1.timelines.home.get.paginate(max_items=200):
+    print(status.content)
+```
 
 ```python
 # Validate data without HTTP (useful in tests)

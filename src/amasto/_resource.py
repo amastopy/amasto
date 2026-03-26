@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import httpx
 from pydantic import TypeAdapter
 from typing import TYPE_CHECKING, Any
 
@@ -49,6 +50,33 @@ class HttpMethod[T, P = None, B = None]:
         self.requires = requires
 
     # ------------------------------------------------------------------
+    # Internal
+    # ------------------------------------------------------------------
+
+    async def _request(
+        self,
+        path: str,
+        /,
+        *,
+        params: P | None = None,
+        body: B | None = None,
+    ) -> tuple[T, httpx.Headers]:
+        """Execute an HTTP request and return ``(validated_data, headers)``."""
+        if not self._client._initialized:  # noqa: SLF001
+            raise RuntimeError("Client is not initialized")
+
+        response = await self._client._http.request(  # noqa: SLF001
+            self.method,
+            path,
+            params=params,  # type: ignore[arg-type]
+            json=body,
+        )
+        response.raise_for_status()
+
+        data: Any = response.json()
+        return self._adapter.validate_python(data), response.headers
+
+    # ------------------------------------------------------------------
     # Execution
     # ------------------------------------------------------------------
 
@@ -60,23 +88,28 @@ class HttpMethod[T, P = None, B = None]:
         raw: dict[str, Any] | None = None,
     ) -> T:
         """Execute the HTTP request and return a validated response."""
-        if not self._client._initialized:  # noqa: SLF001
-            raise RuntimeError("Client is not initialized")
+        if raw is not None:
+            # Need raw JSON — bypass _request to capture the dict.
+            if not self._client._initialized:  # noqa: SLF001
+                raise RuntimeError("Client is not initialized")
 
-        response = await self._client._http.request(  # noqa: SLF001
-            self.method,
-            self.path,
-            params=params,  # type: ignore[arg-type]
-            json=body,
-        )
-        response.raise_for_status()
+            response = await self._client._http.request(  # noqa: SLF001
+                self.method,
+                self.path,
+                params=params,  # type: ignore[arg-type]
+                json=body,
+            )
+            response.raise_for_status()
 
-        data: Any = response.json()
+            data: Any = response.json()
 
-        if raw is not None and isinstance(data, dict):
-            raw.update(data)
+            if isinstance(data, dict):
+                raw.update(data)
 
-        return self._adapter.validate_python(data)
+            return self._adapter.validate_python(data)
+
+        result, _headers = await self._request(self.path, params=params, body=body)
+        return result
 
     # ------------------------------------------------------------------
     # Parsing (for tests without HTTP)

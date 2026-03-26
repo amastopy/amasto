@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ..._pagination import PaginatedHttpMethod
 from ..._params import PaginationParams
 from ..._resource import HttpMethod
 from typing import TYPE_CHECKING, TypedDict
@@ -18,11 +19,11 @@ class DomainBlocksResource:
     __slots__ = ("delete", "get", "post")
 
     def __init__(self, client: Amasto, /) -> None:
-        self.get: HttpMethod[list[str], PaginationParams, None] = HttpMethod(
+        self.get: PaginatedHttpMethod[str, PaginationParams] = PaginatedHttpMethod(
             client,
             "GET",
             "/api/v1/domain_blocks",
-            list[str],
+            str,
         )
         self.post: HttpMethod[dict, None, _DomainBlockBody] = HttpMethod(
             client,

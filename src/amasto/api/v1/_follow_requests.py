@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ..._pagination import PaginatedHttpMethod
 from ..._params import PaginationParams
 from ..._resource import HttpMethod
 from ...models.v1 import Account, Relationship
@@ -48,11 +49,11 @@ class FollowRequestsResource:
 
     def __init__(self, client: Amasto, /) -> None:
         self._client = client
-        self.get: HttpMethod[list[Account], PaginationParams, None] = HttpMethod(
+        self.get: PaginatedHttpMethod[Account, PaginationParams] = PaginatedHttpMethod(
             client,
             "GET",
             "/api/v1/follow_requests",
-            list[Account],
+            Account,
         )
 
     def __getitem__(self, account_id: str) -> _FollowRequestByIdResource:

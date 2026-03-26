@@ -19,6 +19,7 @@ src/amasto/
 ├── py.typed
 ├── _client.py           # Amasto — the main entry point
 ├── _resource.py         # HttpMethod[T, P, B] — async-callable HTTP method
+├── _pagination.py       # PaginatedHttpMethod[T, P] — cursor-based pagination
 ├── _nodeinfo.py         # NodeInfo auto-discovery
 ├── _params.py           # Shared TypedDicts (e.g. PaginationParams)
 ├── _version.py          # since() / Unsupported version-awareness helpers
@@ -91,17 +92,36 @@ result: T = await method(params=..., body=...)
 result: T = method.parse(data)
 ```
 
+### `_pagination.py` — `PaginatedHttpMethod[T, P]`
+
+A specialisation of `HttpMethod` for list endpoints that support Mastodon's cursor-based pagination via `Link` headers.  `T` is the **item** type (e.g. `Status`), not `list[Status]`.
+
+```python
+# Single page (backwards compatible)
+statuses: list[Status] = await client.api.v1.timelines.home.get()
+
+# Async iteration across all pages
+async for status in client.api.v1.timelines.home.get.paginate(params={"limit": 40}):
+    print(status.content)
+
+# Stop after N items
+async for status in client.api.v1.timelines.home.get.paginate(max_items=200):
+    print(status.content)
+```
+
+Internally, `.paginate()` parses the `Link: rel="next"` response header after each page and extracts only the path + query string (never following external hosts).
+
 ### Resource Classes
 
-Each resource file defines one or more small classes with `__slots__` that compose `HttpMethod` instances as attributes:
+Each resource file defines one or more small classes with `__slots__` that compose `HttpMethod` or `PaginatedHttpMethod` instances as attributes:
 
 ```python
 class BookmarksResource:
     __slots__ = ("get",)
 
     def __init__(self, client: Amasto, /) -> None:
-        self.get: HttpMethod[list[Status], PaginationParams, None] = HttpMethod(
-            client, "GET", "/api/v1/bookmarks", list[Status],
+        self.get: PaginatedHttpMethod[Status, PaginationParams] = PaginatedHttpMethod(
+            client, "GET", "/api/v1/bookmarks", Status,
         )
 ```
 

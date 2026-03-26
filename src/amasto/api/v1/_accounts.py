@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ..._pagination import PaginatedHttpMethod
 from ..._params import PaginationParams
 from ..._resource import HttpMethod
 from ...models.v1 import (
@@ -108,11 +109,11 @@ class _StatusesSubResource:
     __slots__ = ("get",)
 
     def __init__(self, client: Amasto, id: str, /) -> None:
-        self.get: HttpMethod[list[Status], _AccountStatusesParams, None] = HttpMethod(
+        self.get: PaginatedHttpMethod[Status, _AccountStatusesParams] = PaginatedHttpMethod(
             client,
             "GET",
             f"/api/v1/accounts/{id}/statuses",
-            list[Status],
+            Status,
         )
 
 
@@ -120,11 +121,11 @@ class _FollowersResource:
     __slots__ = ("get",)
 
     def __init__(self, client: Amasto, id: str, /) -> None:
-        self.get: HttpMethod[list[Account], PaginationParams, None] = HttpMethod(
+        self.get: PaginatedHttpMethod[Account, PaginationParams] = PaginatedHttpMethod(
             client,
             "GET",
             f"/api/v1/accounts/{id}/followers",
-            list[Account],
+            Account,
         )
 
 
@@ -132,11 +133,11 @@ class _FollowingResource:
     __slots__ = ("get",)
 
     def __init__(self, client: Amasto, id: str, /) -> None:
-        self.get: HttpMethod[list[Account], PaginationParams, None] = HttpMethod(
+        self.get: PaginatedHttpMethod[Account, PaginationParams] = PaginatedHttpMethod(
             client,
             "GET",
             f"/api/v1/accounts/{id}/following",
-            list[Account],
+            Account,
         )
 
 
@@ -170,11 +171,11 @@ class _AccountEndorsementsResource:
     __slots__ = ("get",)
 
     def __init__(self, client: Amasto, id: str, /) -> None:
-        self.get: HttpMethod[list[Account], PaginationParams, None] = HttpMethod(
+        self.get: PaginatedHttpMethod[Account, PaginationParams] = PaginatedHttpMethod(
             client,
             "GET",
             f"/api/v1/accounts/{id}/endorsements",
-            list[Account],
+            Account,
         )
 
 

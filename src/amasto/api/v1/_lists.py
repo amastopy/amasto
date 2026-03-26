@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ..._pagination import PaginatedHttpMethod
 from ..._params import PaginationParams
 from ..._resource import HttpMethod
 from ...models.v1 import Account, List
@@ -31,11 +32,11 @@ class _ListAccountsResource:
     __slots__ = ("delete", "get", "post")
 
     def __init__(self, client: Amasto, id: str, /) -> None:
-        self.get: HttpMethod[list[Account], PaginationParams, None] = HttpMethod(
+        self.get: PaginatedHttpMethod[Account, PaginationParams] = PaginatedHttpMethod(
             client,
             "GET",
             f"/api/v1/lists/{id}/accounts",
-            list[Account],
+            Account,
             requires="2.1.0",
         )
         self.post: HttpMethod[dict, None, _ListAccountsBody] = HttpMethod(
